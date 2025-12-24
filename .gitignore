@@ -1,0 +1,29 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+*.egg
+
+# Django
+*.log
+db.sqlite3
+/staticfiles/
+/media/
+
+# Virtual environments
+venv/
+.env.local
+.venv/
+.env.*
+!.env.example
+
+# Tooling & IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Testing & coverage
+htmlcov/
+.coverage*
+.pytest_cache/
