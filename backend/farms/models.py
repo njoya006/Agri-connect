@@ -142,5 +142,15 @@ class Activity(models.Model):
 		field.save(update_fields=list(set(update_fields)))
 
 	def save(self, *args, **kwargs):
+		is_new = self.pk is None
 		super().save(*args, **kwargs)
 		self.apply_field_effects()
+		if is_new:
+			self.apply_inventory_effects()
+
+	def apply_inventory_effects(self):
+		"""Sync farm inventory whenever applicable activities are logged."""
+
+		from inventory.services import apply_activity_inventory_flow
+
+		apply_activity_inventory_flow(self)
