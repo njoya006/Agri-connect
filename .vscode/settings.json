@@ -1,0 +1,14 @@
+{
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#23320B",
+        "titleBar.activeBackground": "#314610",
+        "titleBar.activeForeground": "#F8FCF1"
+    },
+    "chat.tools.terminal.autoApprove": {
+        "npx tsc": true
+    },
+    "cSpell.words": [
+        "psycopg",
+        "venv"
+    ]
+}
