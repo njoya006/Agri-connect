@@ -1,0 +1,167 @@
+\documentclass[12pt,a4paper]{article}
+
+% ========== PACKAGES ==========
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{setspace}
+\microtypesetup{nopatch=footnote}
+
+% ========== BRAND COLORS ==========
+\definecolor{AgriPrimary}{HTML}{166534}
+\definecolor{AgriAccent}{HTML}{F6AD55}
+\definecolor{AgriMuted}{HTML}{EDF2F7}
+\definecolor{AgriText}{HTML}{1F2933}
+
+% ========== GLOBAL STYLING ==========
+\hypersetup{
+    colorlinks=true,
+    linkcolor=AgriPrimary,
+    citecolor=AgriPrimary,
+    urlcolor=AgriPrimary
+}
+\renewcommand{\familydefault}{\sfdefault}
+\linespread{1.15}
+
+% ========== PAGE SETUP ========== 
+\geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.1em}
+\raggedbottom
+\AtBeginDocument{\color{AgriText}}
+
+% ========== SECTION FORMATTING ==========
+	\titleformat{\section}
+    {\Large\bfseries\color{AgriPrimary}}
+    {\thesection}{1em}{}
+    [\vspace{-0.5em}\color{AgriAccent}\rule{\textwidth}{0.5pt}]
+	\titleformat{\subsection}
+    {\large\bfseries\color{AgriPrimary!80}}
+    {\thesubsection}{1em}{}
+	\titleformat{\subsubsection}
+    {\bfseries\color{AgriPrimary}}
+    {\thesubsubsection}{1em}{}
+	\titlespacing*{\section}{0pt}{1.5em}{0.9em}
+	\titlespacing*{\subsection}{0pt}{1.2em}{0.6em}
+	\titlespacing*{\subsubsection}{0pt}{1em}{0.4em}
+
+% ========== HEADER & FOOTER ==========
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{AgriPrimary}{AgriConnect Documentation}}
+\fancyhead[R]{\textcolor{AgriPrimary}{\thepage}}
+\fancyfoot[C]{\textcolor{AgriPrimary}{Year 3 Software Design Project}}
+\setlength{\headheight}{15pt}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\hbox to\headwidth{\color{AgriMuted}\leaders\hrule height \footrulewidth\hfill}}
+
+% ========== CODE STYLE ==========
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    backgroundcolor=\color{AgriMuted},
+    frame=single,
+    rulecolor=\color{AgriPrimary!40},
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    keywordstyle=\color{AgriPrimary}\bfseries,
+    commentstyle=\color{AgriPrimary!70},
+    stringstyle=\color{AgriAccent!80},
+    numberstyle=\tiny\color{AgriPrimary!70},
+    numbers=left,
+    xleftmargin=1em,
+    framexleftmargin=0.5em
+}
+
+\lstdefinelanguage{JavaScript}{
+    keywords={const, let, var, if, else, return, import, from, export, function},
+    ndkeywords={class, extends, React, useState},
+    sensitive=true,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+    morestring=[b]',
+}
+
+% ========== DOCUMENT STARTS ==========
+\begin{document}
+\hypersetup{pageanchor=false}
+
+% ========== TITLE PAGE ==========
+\begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+    {\Large \textcolor{AgriAccent}{Year 3 Software Design and Implementation Project}}\\[0.8cm]
+    {\Huge \textbf{\textcolor{AgriPrimary}{AgriConnect}}}\\[0.2cm]
+    {\Large Agricultural Management Platform}\\[0.8cm]
+
+    \setlength{\fboxsep}{12pt}
+    \noindent\makebox[\textwidth]{
+        \fcolorbox{AgriPrimary!35}{AgriMuted}{\parbox{0.82\textwidth}{\centering\Large ``Connecting Farms to Markets''}}
+    }\\[1.4cm]
+
+    \begin{minipage}{0.48\textwidth}
+        	extbf{Team Members}\\[0.3cm]
+        \begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X@{}}
+            	extbf{[Your Name]} & Product Owner / Developer \\
+            	extbf{[Team Member 2]} & Scrum Master / Backend \\
+            	extbf{[Team Member 3]} & Frontend Developer \\
+            	extbf{[Team Member 4]} & Full-Stack Developer \\
+        \end{tabularx}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.43\textwidth}
+        	extbf{Project Details}\\[0.3cm]
+        \begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X@{}}
+            Course: & Software Design and Implementation \\
+            Instructor: & \textbf{[Instructor Name]} \\
+            Institution: & \textbf{[University Name]} \\
+            Date: & \today \\
+        \end{tabularx}
+    \end{minipage}
+
+    \vfill
+
+    \noindent\makebox[\textwidth]{
+        \fcolorbox{AgriPrimary!35}{AgriMuted}{\parbox{0.28\textwidth}{\centering Insert Logo}}
+    }
+
+    \end{titlepage}
+    \clearpage
+    \hypersetup{pageanchor=true}
+    \pagenumbering{roman}
+
+% ========== TABLE OF CONTENTS ========== 
+\tableofcontents
+\newpage
+
+% ========== LIST OF FIGURES ==========
+\listoffigures
+\listoftables
+\newpage
+\pagenumbering{arabic}
+
+% ========== IMPORT SECTIONS ==========
+\input{sections/01-abstract}
+\input{sections/02-introduction}
+\input{sections/03-requirements}
+\input{sections/04-architecture}
+\input{sections/05-design}
+\input{sections/06-implementation}
+\input{sections/07-testing}
+\input{sections/08-deployment}
+\input{sections/09-conclusion}
+
+\end{document}

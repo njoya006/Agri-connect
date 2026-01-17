@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { clearToken, getCurrentUser, type UserProfile } from "../api/auth";
+import { getToken } from "../api/token-manager";
 
 interface AuthState {
   user: UserProfile | null;
@@ -28,6 +29,12 @@ export const useAuthStore = create<AuthState>()(
       checkAuth: async () => {
         set({ isLoading: true });
         try {
+          const token = getToken("access");
+          if (!token) {
+            clearToken();
+            set({ user: null, isAuthenticated: false, isLoading: false });
+            return;
+          }
           const profile = await getCurrentUser();
           set({ user: profile, isAuthenticated: true, isLoading: false });
         } catch {

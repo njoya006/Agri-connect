@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 import io
 from datetime import timedelta
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django.db.models import DecimalField, ExpressionWrapper, F, Sum, Value
 from django.db.models.functions import Coalesce
@@ -14,6 +14,16 @@ from django.utils import timezone
 from rest_framework import mixins, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.http import StreamingHttpResponse
+import time
+import json
+from django.views import View
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from celery.result import AsyncResult
+from django.conf import settings
+import os
+from .tasks import export_inventory_csv_task
 
 from farms.models import Farm
 
@@ -210,3 +220,132 @@ class InventoryReportViewSet(viewsets.ViewSet):
 			'categories': category_totals,
 		}
 		return Response(data)
+
+
+def alerts_stream(request):
+	"""SSE stream of low-stock alerts (simple polling-based implementation).
+
+	This endpoint yields Server-Sent Events for newly created LowStockAlert rows.
+	It's intentionally simple for development: it polls the DB every 2 seconds for
+	alerts with id > last_id and yields them as JSON payloads.
+	 """
+	# optional starting id
+	try:
+		last_id = int(request.GET.get('since_id', '0') or 0)
+	except ValueError:
+		last_id = 0
+
+	def event_stream():
+		nonlocal last_id
+		while True:
+			qs = LowStockAlert.objects.filter(pk__gt=last_id).select_related('item').order_by('pk')
+			for alert in qs:
+				payload = {
+					'type': 'low_stock',
+					'alert_id': alert.pk,
+					'item_id': alert.item_id,
+					'current_quantity': str(alert.current_quantity),
+					'message': f'Low stock for {alert.item.name}',
+				}
+				last_id = alert.pk
+				yield f"event: low_stock\n"
+				yield f"data: {json.dumps(payload)}\n\n"
+			time.sleep(2)
+
+	return StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+
+
+
+from django.views import View
+from django.http import JsonResponse, HttpResponseForbidden
+
+class InventoryExportStartView(View):
+	def post(self, request):
+		if not request.user.is_authenticated:
+			return HttpResponseForbidden("Authentication required.")
+		filters = request.POST.get('filters')
+		task = export_inventory_csv_task.apply_async(args=[request.user.id, filters])
+		return JsonResponse({'task_id': task.id}, status=202)
+
+
+
+class InventoryExportStatusView(View):
+	def get(self, request, task_id):
+		if not request.user.is_authenticated:
+			return HttpResponseForbidden("Authentication required.")
+		result = AsyncResult(task_id)
+		if result.state == 'SUCCESS':
+			file = result.result.get('file')
+			url = os.path.join(settings.MEDIA_URL, file)
+			return JsonResponse({'state': result.state, 'url': url, 'total': result.result.get('total')})
+		return JsonResponse({'state': result.state, 'progress': result.info}, status=200)
+
+
+# --- Server-side streaming CSV export ---
+from django.utils.encoding import smart_str
+
+class InventoryExportStreamView(View):
+	def get(self, request):
+		# Manual authentication check
+		if not request.user.is_authenticated:
+			from django.http import HttpResponseForbidden
+			return HttpResponseForbidden("Authentication required.")
+
+		filters = {}
+		farm = request.GET.get('farm')
+		if farm:
+			filters['farm_id'] = farm
+		category = request.GET.get('category')
+		if category:
+			filters['category'] = category
+
+		# Date range filtering (created_at)
+		start_date = request.GET.get('start_date')
+		end_date = request.GET.get('end_date')
+
+		qs = InventoryItem.objects.select_related('farm', 'owner')
+		if not request.user.is_staff:
+			qs = qs.filter(owner=request.user)
+		if filters:
+			qs = qs.filter(**filters)
+		if start_date:
+			qs = qs.filter(created_at__gte=start_date)
+		if end_date:
+			qs = qs.filter(created_at__lte=end_date)
+
+		# Allow user to specify fields to export
+		default_fields = [
+			'id', 'farm', 'category', 'name', 'description', 'quantity', 'unit',
+			'minimum_stock_level', 'purchase_price', 'selling_price', 'expiry_date',
+			'storage_location', 'supplier_info', 'last_audited', 'created_at', 'updated_at'
+		]
+		fields_param = request.GET.get('fields')
+		if fields_param:
+			# Only allow valid fields
+			requested_fields = [f.strip() for f in fields_param.split(',') if f.strip() in default_fields]
+			fieldnames = requested_fields if requested_fields else default_fields
+		else:
+			fieldnames = default_fields
+
+		def row_generator():
+			output = io.StringIO()
+			writer = csv.DictWriter(output, fieldnames=fieldnames)
+			writer.writeheader()
+			yield smart_str(output.getvalue())
+			output.seek(0)
+			output.truncate(0)
+			for item in qs.iterator():
+				row = {}
+				for field in fieldnames:
+					if field == 'farm':
+						row['farm'] = item.farm_id
+					else:
+						row[field] = getattr(item, field, '')
+				writer.writerow(row)
+				yield smart_str(output.getvalue())
+				output.seek(0)
+				output.truncate(0)
+
+		response = StreamingHttpResponse(row_generator(), content_type='text/csv', status=200)
+		response['Content-Disposition'] = 'attachment; filename="inventory_stream.csv"'
+		return response
