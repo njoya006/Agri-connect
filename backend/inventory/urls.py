@@ -8,6 +8,10 @@ from .views import (
     InventoryTransactionViewSet,
     LowStockAlertViewSet,
     InventoryReportViewSet,
+    alerts_stream,
+    InventoryExportStartView,
+    InventoryExportStatusView,
+    InventoryExportStreamView,
 )
 
 router = DefaultRouter()
@@ -18,4 +22,8 @@ router.register('inventory/reports', InventoryReportViewSet, basename='inventory
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('alerts/stream/', alerts_stream),
+    path('inventory/export/start/', InventoryExportStartView.as_view(), name='inventory-export-start'),
+    path('inventory/export/status/<str:task_id>/', InventoryExportStatusView.as_view(), name='inventory-export-status'),
+    path('inventory/export/stream/', InventoryExportStreamView.as_view(), name='inventory-export-stream'),
 ]

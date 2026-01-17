@@ -1,0 +1,45 @@
+% Requirements section for AgriConnect documentation
+\section{Requirements Analysis}
+
+\subsection{Functional Requirements}
+
+\subsubsection{User Management}
+\begin{itemize}[leftmargin=*]
+	\item Users can register with email and password.
+	\item Users can login and logout.
+	\item Users can update their profiles.
+	\item System supports farmer and admin roles.
+\end{itemize}
+
+\subsubsection{Farm Management}
+\begin{itemize}[leftmargin=*]
+	\item Farmers can add farms and fields.
+	\item Farmers can log planting and harvesting.
+	\item System shows activity history.
+	\item Users can upload activity photos.
+\end{itemize}
+
+\subsubsection{Marketplace}
+\begin{itemize}[leftmargin=*]
+	\item Users can view price board.
+	\item Users can create buy/sell listings.
+	\item Users can search and filter listings.
+	\item Users can message each other.
+\end{itemize}
+
+\subsection{Non-Functional Requirements}
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|l|l|}
+		\hline
+			extbf{Category} & \textbf{Requirement} \\
+		\hline
+		Performance & Page load $< 3$ seconds \\
+		Security & HTTPS, JWT authentication \\
+		Usability & Mobile-responsive design \\
+		Reliability & 99\% uptime \\
+		\hline
+	\end{tabular}
+	\caption{Non-functional requirements}
+	\label{tab:nfr}
+\end{table}

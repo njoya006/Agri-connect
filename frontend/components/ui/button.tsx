@@ -1,6 +1,5 @@
 "use client";
 
-import { Slot } from "@radix-ui/react-slot";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -45,17 +44,43 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, isLoading, disabled, loadingText, children, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
+    if (asChild && React.isValidElement(children)) {
+      const child = children as React.ReactElement<{ className?: string; children?: React.ReactNode }>;
+      const childContent = child.props.children ?? null;
+      const content = (
+        <span className="inline-flex items-center gap-2">
+          {isLoading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+          <span>{isLoading ? loadingText ?? "Loading" : childContent}</span>
+        </span>
+      );
+
+      return React.cloneElement(
+        child,
+        {
+          className: cn(buttonVariants({ variant, size, isLoading, className }), child.props.className),
+          "aria-disabled": Boolean(disabled) || Boolean(isLoading) || undefined,
+          ...props,
+        },
+        content,
+      );
+    }
+
+    const fallbackContent = (
+      <span className="inline-flex items-center gap-2">
+        {isLoading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+        <span>{isLoading ? loadingText ?? "Loading" : children}</span>
+      </span>
+    );
+
     return (
-      <Comp
+      <button
         className={cn(buttonVariants({ variant, size, isLoading, className }))}
         ref={ref}
         disabled={Boolean(disabled) || Boolean(isLoading)}
         {...props}
       >
-        {isLoading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
-        <span>{isLoading ? loadingText ?? "Loading" : children}</span>
-      </Comp>
+        {fallbackContent}
+      </button>
     );
   },
 );

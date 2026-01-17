@@ -17,6 +17,12 @@ class ActivitySerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
     )
+    inventory_items = serializers.ListField(
+        child=serializers.DictField(),
+        write_only=True,
+        required=False,
+        help_text="List of inventory items and quantities used in this activity.",
+    )
 
     class Meta:
         model = Activity
@@ -35,6 +41,7 @@ class ActivitySerializer(serializers.ModelSerializer):
             'performer_email',
             'images',
             'upload_images',
+            'inventory_items',
             'created_at',
             'updated_at',
         )
@@ -53,9 +60,28 @@ class ActivitySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         uploads = validated_data.pop('upload_images', [])
+        inventory_items = validated_data.pop('inventory_items', [])
         validated_data['performed_by'] = self.context['request'].user
         activity = super().create(validated_data)
         self._persist_images(activity, uploads)
+        # Deduct inventory and create transactions for each item
+        from inventory.services import apply_inventory_transaction
+        from inventory.models import InventoryItem, InventoryTransaction
+        for entry in inventory_items:
+            try:
+                item = InventoryItem.objects.get(id=entry['item_id'])
+                qty = entry['quantity']
+                apply_inventory_transaction(
+                    item=item,
+                    quantity_change=-abs(float(qty)),
+                    transaction_type=InventoryTransaction.TransactionType.USAGE,
+                    performed_by=activity.performed_by,
+                    related_activity=activity,
+                    notes=f"Deducted for activity {activity.id}",
+                )
+            except Exception as e:
+                # Optionally log or handle error
+                pass
         return activity
 
     def update(self, instance, validated_data):
@@ -63,6 +89,21 @@ class ActivitySerializer(serializers.ModelSerializer):
         activity = super().update(instance, validated_data)
         self._persist_images(activity, uploads)
         return activity
+
+    def validate_inventory_items(self, value):
+        from inventory.models import InventoryItem
+        errors = []
+        for entry in value:
+            try:
+                item = InventoryItem.objects.get(id=entry['item_id'])
+                qty = float(entry['quantity'])
+                if item.quantity < qty:
+                    errors.append(f"Insufficient stock for {item.name} (requested: {qty}, available: {item.quantity})")
+            except InventoryItem.DoesNotExist:
+                errors.append(f"Inventory item with id {entry['item_id']} does not exist.")
+        if errors:
+            raise serializers.ValidationError(errors)
+        return value
 
 
 class FieldSerializer(serializers.ModelSerializer):

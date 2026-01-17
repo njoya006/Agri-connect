@@ -1,5 +1,21 @@
 import apiClient from "./client";
 
+type PaginatedResponse<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+
+const isPaginatedResponse = <T>(payload: unknown): payload is PaginatedResponse<T> => {
+  return Boolean(
+    payload &&
+      typeof payload === "object" &&
+      "results" in (payload as Record<string, unknown>) &&
+      Array.isArray((payload as { results?: unknown }).results),
+  );
+};
+
 export interface Activity {
   id: number;
   field: number;
@@ -58,6 +74,15 @@ export interface Farm {
   updated_at: string;
 }
 
+export interface FarmStats {
+  field_count: number;
+  active_field_count: number;
+  total_area: string;
+  total_yield: string;
+  last_activity_date: string | null;
+  upcoming_activity_count: number;
+}
+
 export interface FarmPayload {
   name: string;
   location: string;
@@ -92,8 +117,14 @@ export interface ActivityPayload {
 }
 
 export async function getFarms(): Promise<Farm[]> {
-  const { data } = await apiClient.get<Farm[]>("/farms/");
-  return data;
+  const { data } = await apiClient.get<Farm[] | PaginatedResponse<Farm>>("/farms/");
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (isPaginatedResponse<Farm>(data)) {
+    return data.results;
+  }
+  return [];
 }
 
 export async function getFarm(id: number): Promise<Farm> {
@@ -115,14 +146,33 @@ export async function deleteFarm(id: number): Promise<void> {
   await apiClient.delete(`/farms/${id}/`);
 }
 
+export async function getFarmStats(id: number): Promise<FarmStats> {
+  const { data } = await apiClient.get<FarmStats>(`/farms/${id}/stats/`);
+  return data;
+}
+
 export async function getFields(farmId: number): Promise<Field[]> {
   const { data } = await apiClient.get<Field[]>(`/farms/${farmId}/fields/`);
+  return data;
+}
+
+export async function getField(id: number): Promise<Field> {
+  const { data } = await apiClient.get<Field>(`/fields/${id}/`);
   return data;
 }
 
 export async function createField(farmId: number, payload: FieldPayload): Promise<Field> {
   const { data } = await apiClient.post<Field>(`/farms/${farmId}/fields/`, payload);
   return data;
+}
+
+export async function updateField(id: number, payload: Partial<FieldPayload>): Promise<Field> {
+  const { data } = await apiClient.patch<Field>(`/fields/${id}/`, payload);
+  return data;
+}
+
+export async function deleteField(id: number): Promise<void> {
+  await apiClient.delete(`/fields/${id}/`);
 }
 
 export async function getActivities(fieldId: number): Promise<Activity[]> {
@@ -135,4 +185,13 @@ export async function createActivity(fieldId: number, payload: ActivityPayload |
   const config = payload instanceof FormData ? { headers: { "Content-Type": "multipart/form-data" } } : undefined;
   const { data } = await apiClient.post<Activity>(endpoint, payload, config);
   return data;
+}
+
+export async function updateActivity(activityId: number, payload: Partial<ActivityPayload>): Promise<Activity> {
+  const { data } = await apiClient.patch<Activity>(`/activities/${activityId}/`, payload);
+  return data;
+}
+
+export async function deleteActivity(activityId: number): Promise<void> {
+  await apiClient.delete(`/activities/${activityId}/`);
 }

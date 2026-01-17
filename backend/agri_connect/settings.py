@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'channels',
     'users',
     'farms',
     'marketplace',
@@ -157,6 +158,8 @@ if not CORS_ALLOW_ALL_ORIGINS:
         if origin.strip()
     ]
 
+CORS_ALLOW_CREDENTIALS = True
+
 
 EMAIL_BACKEND = os.environ.get('DJANGO_EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 
@@ -167,6 +170,19 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_ALWAYS_EAGER = os.environ.get('CELERY_TASK_ALWAYS_EAGER', 'False').lower() == 'true'
+
+
+# Channels / realtime configuration (Redis-backed channel layer)
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/1')
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [REDIS_URL],
+        },
+    },
+}
 
 
 SESSION_COOKIE_SECURE = not DEBUG

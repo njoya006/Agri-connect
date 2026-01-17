@@ -22,6 +22,7 @@ export interface LoginData {
 export interface RegisterData {
   email: string;
   password: string;
+  confirm_password?: string;
   first_name?: string;
   last_name?: string;
   phone_number?: string;
@@ -59,7 +60,11 @@ export async function login(credentials: LoginData): Promise<AuthResponse> {
 }
 
 export async function register(payload: RegisterData): Promise<UserProfile> {
-  const { data } = await apiClient.post<UserProfile>(AUTH_ENDPOINTS.register, payload);
+  const requestPayload = {
+    ...payload,
+    confirm_password: payload.confirm_password ?? payload.password,
+  };
+  const { data } = await apiClient.post<UserProfile>(AUTH_ENDPOINTS.register, requestPayload);
   return data;
 }
 

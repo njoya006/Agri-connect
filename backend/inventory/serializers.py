@@ -63,7 +63,7 @@ class InventoryItemSerializer(serializers.ModelSerializer):
     total_value = serializers.SerializerMethodField()
     is_low_stock = serializers.SerializerMethodField()
     is_expiring_soon = serializers.SerializerMethodField()
-    transactions = InventoryTransactionSerializer(source='transactions', many=True, read_only=True)
+    transactions = InventoryTransactionSerializer(many=True, read_only=True)
 
     class Meta:
         model = InventoryItem

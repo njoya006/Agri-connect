@@ -101,6 +101,7 @@ export function RegisterForm({ redirectPath = "/dashboard", onSuccess, showLogin
       await registerRequest({
         email: values.email,
         password: values.password,
+        confirm_password: values.confirmPassword,
         first_name: first,
         last_name: last,
         phone_number: values.phone,
