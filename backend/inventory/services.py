@@ -44,12 +44,13 @@ def apply_inventory_transaction(
     if not quantity_change:
         return None
 
+    from django.core.exceptions import ValidationError
+
     with transaction.atomic():
         previous_quantity = item.quantity
         tentative_new_quantity = previous_quantity + quantity_change
         if tentative_new_quantity < 0:
-            quantity_change = -previous_quantity
-            tentative_new_quantity = Decimal('0')
+            raise ValidationError("Stock update failed: insufficient inventory to complete this operation.")
 
         item.quantity = tentative_new_quantity
         item.save(update_fields=['quantity', 'updated_at'])

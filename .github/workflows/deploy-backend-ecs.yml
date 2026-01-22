@@ -1,0 +1,78 @@
+name: Deploy Backend to AWS ECS Fargate
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Get AWS account ID
+        id: account
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image to ECR
+        env:
+          AWS_ACCOUNT_ID: ${{ steps.account.outputs.ACCOUNT_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          ECR_REPO: ${{ secrets.ECR_REPO }}
+        run: |
+          TAG=${GITHUB_SHA::8}
+          REPO_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}
+          aws ecr describe-repositories --repository-names ${ECR_REPO} >/dev/null 2>&1 || aws ecr create-repository --repository-name ${ECR_REPO} >/dev/null
+          aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${REPO_URI}
+          docker build -t ${ECR_REPO}:${TAG} -f backend/Dockerfile .
+          docker tag ${ECR_REPO}:${TAG} ${REPO_URI}:${TAG}
+          docker push ${REPO_URI}:${TAG}
+          echo "IMAGE_URI=${REPO_URI}:${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Register ECS task definition
+        id: register
+        env:
+          IMAGE_URI: ${{ steps.build-and-deploy.outputs.IMAGE_URI }}
+          IMAGE_URI2: ${{ steps.build-and-deploy.outputs.IMAGE_URI }}
+          IMAGE_URI_FALLBACK: ${{ env.IMAGE_URI }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          # derive variables
+          AWS_ACCOUNT_ID=${{ steps.account.outputs.ACCOUNT_ID }}
+          ECR_REPO=${{ secrets.ECR_REPO }}
+          TAG=${GITHUB_SHA::8}
+          IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR_REPO}:${TAG}
+
+          # substitute placeholders in taskdef template
+          sed "s|\${IMAGE_URI}|${IMAGE_URI}|g; s|\${TASK_FAMILY}|${{ secrets.TASK_FAMILY }}|g; s|\${CONTAINER_NAME}|${{ secrets.CONTAINER_NAME }}|g; s|\${AWS_REGION}|${{ secrets.AWS_REGION }}|g; s|\${EXECUTION_ROLE_ARN}|${{ secrets.EXECUTION_ROLE_ARN }}|g; s|\${TASK_ROLE_ARN}|${{ secrets.TASK_ROLE_ARN }}|g" infra/ecs/taskdef.template.json > infra/ecs/taskdef.json
+
+          aws ecs register-task-definition --cli-input-json file://infra/ecs/taskdef.json > taskdef.json
+          echo "TASKDEF=$(jq -r '.taskDefinition.taskDefinitionArn' taskdef.json)" >> $GITHUB_OUTPUT
+
+      - name: Update ECS service
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          CLUSTER=${{ secrets.ECS_CLUSTER }}
+          SERVICE=${{ secrets.ECS_SERVICE }}
+          TASKDEF_ARN=${{ steps.register.outputs.TASKDEF }}
+
+          aws ecs update-service --cluster ${CLUSTER} --service ${SERVICE} --force-new-deployment
+
+      - name: Post-deploy message
+        run: |
+          echo "Deployment triggered. Visit your ALB / DNS once the service becomes healthy."

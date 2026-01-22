@@ -6,6 +6,7 @@ from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
+import logging
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -215,3 +216,36 @@ LOGGING = {
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+def _validate_production_settings() -> None:
+    """Basic runtime checks to avoid common misconfiguration in production.
+
+    This function raises ImproperlyConfigured for missing/weak secrets or
+    obviously unsafe CORS/host settings when `DEBUG` is disabled.
+    """
+
+    if DEBUG:
+        return
+
+    # SECRET_KEY safety
+    if not SECRET_KEY or SECRET_KEY in ('replace-me', 'changeme', '') or len(SECRET_KEY) < 50:
+        raise ImproperlyConfigured(
+            'DJANGO_SECRET_KEY must be set to a strong, non-default value when DEBUG is False.'
+        )
+
+    # ALLOWED_HOSTS presence
+    if not ALLOWED_HOSTS:
+        raise ImproperlyConfigured('DJANGO_ALLOWED_HOSTS must be set to a non-empty list in production.')
+
+    # CORS safety: do not allow all origins in production
+    if CORS_ALLOW_ALL_ORIGINS:
+        raise ImproperlyConfigured('CORS_ALLOW_ALL_ORIGINS must be False in production; set CORS_ALLOWED_ORIGINS instead.')
+
+
+# Run validation at import time so the app fails fast under bad config.
+try:
+    _validate_production_settings()
+except ImproperlyConfigured:
+    logging.exception('Production settings validation failed')
+    raise

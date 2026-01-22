@@ -15,6 +15,17 @@ import {
 } from "@/lib/api/inventory";
 import { useFarms } from "@/lib/hooks/use-farms";
 import { useInventoryStreamingExport, useInventoryItems } from "@/lib/hooks/use-inventory";
+import { useInventoryTurnoverRate } from "@/lib/hooks/use-analytics";
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  Tooltip,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Cell,
+} from "recharts";
 import { formatCurrency } from "@/lib/utils/helpers";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
@@ -132,8 +143,96 @@ export default function InventoryPage() {
     },
   ];
 
+  // Inventory usage analytics (turnover rate)
+  const {
+    data: turnoverData = [],
+    isLoading: isTurnoverLoading,
+    error: turnoverError,
+  } = useInventoryTurnoverRate(30);
+  const filteredTurnover = useMemo(() => {
+    let data = turnoverData;
+    if (categoryFilter !== CATEGORY_ALL) {
+      data = data.filter((item: { item_id: number }) => {
+        const inv = items.find((i) => i.id === item.item_id);
+        return inv && inv.category === categoryFilter;
+      });
+    }
+    if (farmFilter !== FARM_ALL) {
+      data = data.filter((item: { item_id: number }) => {
+        const inv = items.find((i) => i.id === item.item_id);
+        return inv && String(inv.farm) === String(farmFilter);
+      });
+    }
+    return data;
+  }, [turnoverData, categoryFilter, farmFilter, items]);
+
   return (
     <section className="space-y-6">
+            {/* Inventory Usage Trends Visualization */}
+            <Card className="shadow-card border border-accent/30 bg-white/90">
+              <CardHeader>
+                <CardTitle>Inventory Usage Trends (30d)</CardTitle>
+                <p className="text-sm text-foreground/60">Top used items by farm/category. Filters apply below.</p>
+              </CardHeader>
+              <CardContent>
+                <div className="h-96 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    {isTurnoverLoading ? (
+                      <div className="flex h-full items-center justify-center text-sm text-foreground/60">
+                        Loading usage trends…
+                      </div>
+                    ) : turnoverError ? (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <div className="rounded-xl bg-red-100 px-6 py-4 text-center text-sm text-red-700 max-w-xs w-full mx-auto shadow-sm border border-red-200" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+                          Unable to load usage data.<br />{turnoverError instanceof Error ? turnoverError.message : 'Please try again.'}
+                        </div>
+                      </div>
+                    ) : filteredTurnover.length ? (
+                      <BarChart
+                        data={filteredTurnover.slice(0, 10)}
+                        layout="vertical"
+                        margin={{ top: 20, right: 40, left: 80, bottom: 20 }}
+                        barCategoryGap={16}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                        <XAxis type="number" stroke="#64748b" fontSize={13} tickLine={false} axisLine={false} />
+                        <YAxis
+                          dataKey="item_name"
+                          type="category"
+                          width={180}
+                          tick={({ x, y, payload }) => (
+                            <text
+                              x={x}
+                              y={y}
+                              fill="#334155"
+                              fontSize="13"
+                              dy={6}
+                              style={{ whiteSpace: 'pre-line', fontWeight: 500 }}
+                            >
+                              {String(payload.value).length > 24
+                                ? `${String(payload.value).slice(0, 22)}...`
+                                : payload.value}
+                            </text>
+                          )}
+                        />
+                        <Tooltip contentStyle={{ borderRadius: 12, maxWidth: 220, whiteSpace: 'pre-line' }} />
+                        <Bar dataKey="total_out" fill="#0ea5e9" radius={[8, 8, 8, 8]} name="Used">
+                          {filteredTurnover.slice(0, 10).map((entry, idx) => (
+                            <Cell key={`cell-${idx}`} fill="#0ea5e9" />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <p className="rounded-xl bg-muted/60 px-6 py-4 text-center text-sm text-foreground/60 max-w-xs w-full mx-auto shadow-sm border border-border/40" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+                          No usage data for this period.
+                        </p>
+                      </div>
+                    )}
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
       <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-2">
           <p className="text-sm uppercase tracking-[0.3em] text-foreground/50">Inventory</p>

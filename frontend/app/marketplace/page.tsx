@@ -5,8 +5,29 @@ import { Layers, ShoppingBag, UploadCloud } from "lucide-react";
 
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { useMarketplaceListings, useMarketplacePrices } from "@/lib/hooks/use-marketplace";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { addToCart, getCart } from "@/lib/cart";
+// `Link` already imported above
 
 export default function MarketplacePage() {
+  const { data: listings = [], isLoading: listingsLoading, error: listingsError } = useMarketplaceListings();
+  const { data: prices = [], isLoading: pricesLoading, error: pricesError } = useMarketplacePrices();
+  const [added, setAdded] = useState<Record<number, boolean>>({});
+  const [qtys, setQtys] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    // initialize per-listing qty defaults
+    if (listings && listings.length) {
+      const initial: Record<number, string> = {};
+      listings.forEach((l: any) => {
+        initial[l.id] = '1';
+      });
+      setQtys((s) => ({ ...initial, ...s }));
+    }
+  }, [listings]);
+
   return (
     <section className="space-y-6">
       <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -29,11 +50,56 @@ export default function MarketplacePage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-foreground/70">
-            <p>The React UI for marketplace listings is under active development. Listings posted via the backend API remain live.</p>
-            <p>
-              POST to <code>/api/marketplace/listings/</code> with images + inventory references to publish offers. Once the UI ships, those endpoints will power
-              the grid displayed here.
-            </p>
+            {listingsLoading ? (
+              <p>Loading listings…</p>
+            ) : listingsError ? (
+              <p className="text-red-500">Failed to load listings.</p>
+            ) : listings.length === 0 ? (
+              <p>No listings available.</p>
+            ) : (
+              <div className="grid gap-4">
+                {listings.map((listing) => (
+                  <div key={listing.id} className="flex items-center gap-4 border-b pb-3 last:border-b-0">
+                    {listing.image && (
+                      <Image src={listing.image} alt={listing.title} width={64} height={64} className="rounded object-cover" />
+                    )}
+                    <div className="flex-1">
+                      <div className="font-semibold text-foreground">{listing.title}</div>
+                      <div className="text-xs text-foreground/60">{listing.description}</div>
+                      <div className="text-accent font-bold mt-1">{listing.price_per_unit} XAF</div>
+                      <div className="mt-2">
+                        <label className="text-xs mr-2">Qty</label>
+                        <input
+                          type="number"
+                          min={0.01}
+                          step={0.01}
+                          value={qtys[listing.id] ?? '1'}
+                          onChange={(e) => setQtys((s) => ({ ...s, [listing.id]: e.target.value }))}
+                          className="w-20 rounded border px-2 py-1 text-sm"
+                        />
+                        <button
+                          onClick={() => {
+                            const raw = qtys[listing.id] ?? '1';
+                            const qty = Number(raw) || 1;
+                            if (qty <= 0) return;
+                            addToCart({ listingId: listing.id, title: listing.title, price_per_unit: Number(listing.price_per_unit), quantity: qty });
+                            setAdded((s) => ({ ...s, [listing.id]: true }));
+                            setTimeout(() => setAdded((s) => ({ ...s, [listing.id]: false })), 1400);
+                          }}
+                          className={"ml-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold " + (added[listing.id] ? "bg-green-600 text-white" : "bg-accent text-accent-foreground")}
+                        >
+                          {added[listing.id] ? 'Added' : 'Add to cart'}
+                        </button>
+                        <Link href="/marketplace/checkout" className="ml-3 text-xs text-foreground/70 underline">Checkout</Link>
+                      </div>
+                      {listing.inventory_reference && (
+                        <div className="text-xs text-foreground/40">Inventory: {listing.inventory_reference}</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -45,8 +111,32 @@ export default function MarketplacePage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-foreground/70">
-            <p>Price updates live under <code>/api/marketplace/prices/</code>. Use them to broadcast commodity insights across your network.</p>
-            <p>Coming soon: filters, CSV exports, and alerts for sudden price swings.</p>
+            {pricesLoading ? (
+              <p>Loading prices…</p>
+            ) : pricesError ? (
+              <p className="text-red-500">Failed to load prices.</p>
+            ) : prices.length === 0 ? (
+              <p>No price data available.</p>
+            ) : (
+              <table className="w-full text-xs">
+                <thead>
+                  <tr>
+                    <th className="text-left">Commodity</th>
+                    <th className="text-left">Price</th>
+                    <th className="text-left">Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {prices.map((price) => (
+                    <tr key={price.id}>
+                      <td>{price.commodity}</td>
+                      <td>{price.price} XAF</td>
+                      <td>{new Date(price.updated_at).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </CardContent>
         </Card>
       </div>

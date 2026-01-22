@@ -81,10 +81,24 @@ class ListingViewSet(viewsets.ModelViewSet):
 		return qs
 
 	def perform_create(self, serializer):
-		serializer.save(seller=self.request.user)
+		# If an inventory item is provided, derive the seller from its owner to
+		# guarantee ownership consistency. Otherwise default to request.user.
+		inventory = serializer.validated_data.get('inventory_item') if hasattr(serializer, 'validated_data') else None
+		if inventory:
+			serializer.save(seller=inventory.owner)
+		else:
+			serializer.save(seller=self.request.user)
 
 	def perform_update(self, serializer):
-		serializer.save(seller=self.request.user)
+		# On update, prefer the inventory item's owner if present; otherwise
+		# preserve the existing seller or fall back to the request user.
+		inventory = serializer.validated_data.get('inventory_item') if hasattr(serializer, 'validated_data') else None
+		if inventory:
+			serializer.save(seller=inventory.owner)
+		else:
+			# keep existing seller when not changing inventory reference
+			existing_seller = getattr(serializer.instance, 'seller', None)
+			serializer.save(seller=existing_seller or self.request.user)
 
 	def retrieve(self, request, *args, **kwargs):
 		instance = self.get_object()

@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -70,7 +71,13 @@ export function ActivityForm({ defaultValues, onSubmit, submitLabel = "Log activ
   };
 
   const handleSubmit = async (values: ActivityFormValues) => {
-    await onSubmit({ ...values, images, inventory_items: selectedItems });
+    try {
+      await onSubmit({ ...values, images, inventory_items: selectedItems });
+    } catch (err: any) {
+      // Show error toast for image upload or server errors
+      const msg = err?.message || err?.toString() || "Failed to save activity. Please try again.";
+      toast.error(msg.includes("upload_images") ? msg.replace("upload_images:", "Image error:") : msg);
+    }
   };
 
   return (
@@ -121,7 +128,19 @@ export function ActivityForm({ defaultValues, onSubmit, submitLabel = "Log activ
           className="mt-2 w-full rounded-xl border border-dashed border-border/60 bg-white/90 px-4 py-2 text-sm"
           onChange={(event) => {
             const files = event.target.files ? Array.from(event.target.files) : [];
-            setImages(files);
+            // Frontend validation: max 5MB, JPEG/PNG only
+            const validFiles = files.filter(f => {
+              if (f.size > 5 * 1024 * 1024) {
+                toast.error(`Image '${f.name}' exceeds 5MB size limit.`);
+                return false;
+              }
+              if (!["image/jpeg", "image/png"].includes(f.type)) {
+                toast.error(`Image '${f.name}' must be JPEG or PNG.`);
+                return false;
+              }
+              return true;
+            });
+            setImages(validFiles);
           }}
         />
         {images.length > 0 && <span className="mt-1 block text-xs text-foreground/60">{images.length} image(s) selected</span>}

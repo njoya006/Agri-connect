@@ -1,0 +1,16 @@
+Hi {{ buyer_name }},
+
+Your payment for order #{{ order_id }} was successful.
+
+Transaction: {{ transaction_id }}
+Total: {{ total }}
+
+Items:
+{% for it in items %}
+- {{ it.quantity }} × {{ it.title }} — {{ it.subtotal }} (seller: {{ it.seller_email }})
+{% endfor %}
+
+We'll notify sellers to fulfill their parts of the order.
+
+Thanks,
+AgriConnect

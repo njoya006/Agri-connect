@@ -1,3 +1,24 @@
+import { getInventoryRestockingPrediction, type InventoryRestockingPrediction } from "../api/analytics";
+export function useInventoryRestockingPrediction(days?: number) {
+  return useQuery<InventoryRestockingPrediction[]>({
+    queryKey: ["analytics", "restocking-prediction", days ?? 30],
+    queryFn: () => getInventoryRestockingPrediction({ days }),
+  });
+}
+import { getInventoryTurnoverRate, getInventoryStockValueTrend, type InventoryTurnoverRate, type InventoryStockValueTrend } from "../api/analytics";
+export function useInventoryTurnoverRate(days?: number) {
+  return useQuery<InventoryTurnoverRate[]>({
+    queryKey: ["analytics", "turnover-rate", days ?? 30],
+    queryFn: () => getInventoryTurnoverRate({ days }),
+  });
+}
+
+export function useInventoryStockValueTrend(days?: number) {
+  return useQuery<InventoryStockValueTrend[]>({
+    queryKey: ["analytics", "stock-value-trend", days ?? 30],
+    queryFn: () => getInventoryStockValueTrend({ days }),
+  });
+}
 import { useQuery } from "@tanstack/react-query";
 
 import { getAnalyticsSummary, getFarmMetrics, type AnalyticsSummaryItem, type FarmMetric, type MetricFilters } from "../api/analytics";

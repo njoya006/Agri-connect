@@ -48,7 +48,14 @@ export function useLowStockAlerts(itemId?: number) {
           // ignore parse errors
         }
       };
-      ws.onerror = () => {
+      ws.onerror = (event) => {
+        // If unauthorized/expired, show toast and prompt re-auth
+        if (ws.readyState === WebSocket.CLOSING || ws.readyState === WebSocket.CLOSED) {
+          if (event && (event as any).code === 4001) {
+            toast.error("Session expired. Please log in again to receive alerts.");
+            // Optionally, redirect to login or trigger logout
+          }
+        }
         // fallback to SSE
         if (wsRef.current) {
           wsRef.current.close();
@@ -79,7 +86,12 @@ export function useLowStockAlerts(itemId?: number) {
           // ignore
         }
       };
-      es.onerror = () => {
+      es.onerror = (event) => {
+        // If unauthorized/expired, show toast and prompt re-auth
+        if ((event as any)?.status === 401 || (event as any)?.code === 4001) {
+          toast.error("Session expired. Please log in again to receive alerts.");
+          // Optionally, redirect to login or trigger logout
+        }
         es.close();
       };
     }
