@@ -1,3 +1,54 @@
+```tex
+% Design section for AgriConnect documentation
+\section{System Design}
+
+\subsection{UML Diagrams}
+\begin{figure}[H]
+\t\centering
+\t\includegraphics[width=0.7\textwidth]{images/class-diagram.png}
+\t\caption{Class Diagram}
+\t\label{fig:class}
+\end{figure}
+
+\begin{figure}[H]
+\t\centering
+\t\includegraphics[width=0.7\textwidth]{images/use-case.png}
+\t\caption{Use Case Diagram}
+\t\label{fig:usecase}
+\end{figure}
+
+\subsection{Database Design}
+Core database tables:
+\begin{table}[H]
+\t\centering
+\t\begin{tabular}{|l|l|}
+\t\t\hline
+\t\textbf{Table} & \textbf{Purpose} \\
+\t\hline
+\tusers & User accounts \\
+\tfarms & Farm information \\
+\tfields & Field details \\
+\tactivities & Farming activities \\
+\tlistings & Marketplace items \\
+\tmessages & User communications \\
+\t\hline
+\t\end{tabular}
+\t\caption{Database Tables}
+\t\label{tab:database}
+\end{table}
+
+\subsection{API Design}
+Key API endpoints:
+\begin{verbatim}
+POST   /api/auth/register/
+POST   /api/auth/login/
+GET    /api/farms/
+POST   /api/farms/
+GET    /api/marketplace/listings/
+POST   /api/marketplace/listings/
+\end{verbatim}
+
+```
 % Design section for AgriConnect documentation
 \section{System Design}
 

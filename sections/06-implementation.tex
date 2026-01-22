@@ -1,3 +1,71 @@
+```tex
+% Implementation section for AgriConnect documentation
+\section{Implementation}
+
+\subsection{Technology Stack}
+\begin{table}[H]
+\t\centering
+\t\begin{tabular}{|l|l|}
+\t\t\hline
+\t\textbf{Component} & \textbf{Technology} \\
+\t\hline
+\tFrontend & Next.js 13, TypeScript, Tailwind CSS \\
+\tBackend & Django 4, Django REST Framework \\
+\tDatabase & PostgreSQL \\
+\tAuthentication & JWT tokens \\
+\tDeployment & Vercel (frontend), Render (backend) \\
+\t\hline
+\t\end{tabular}
+\t\caption{Technology Stack}
+\t\label{tab:techstack}
+\end{table}
+
+\subsection{Project Structure}
+\begin{verbatim}
+agri-connect/
+|-- frontend/          # Next.js application
+|-- backend/           # Django application
+|-- docs/              # Documentation
+`-- README.md
+\end{verbatim}
+
+\subsection{Key Code Examples}
+\subsubsection{Django Model Example}
+\begin{lstlisting}[language=Python, caption=Farm Model]
+from django.db import models
+
+class Farm(models.Model):
+\tuser = models.ForeignKey(User, on_delete=models.CASCADE)
+\tname = models.CharField(max_length=255)
+\tlocation = models.CharField(max_length=500)
+\tarea = models.DecimalField(max_digits=10, decimal_places=2)
+\tcreated_at = models.DateTimeField(auto_now_add=True)
+    
+\tdef __str__(self):
+\t\treturn self.name
+\end{lstlisting}
+
+\subsubsection{Next.js Component Example}
+\begin{lstlisting}[language=JavaScript, caption=Farm Dashboard Component]
+import React from 'react';
+
+export default function FarmDashboard() {
+\tconst [farms, setFarms] = React.useState([]);
+    
+\treturn (
+\t\t<div className="p-4">
+\t\t\t<h1 className="text-2xl font-bold">My Farms</h1>
+\t\t\t{farms.map(farm => (
+\t\t\t\t<div key={farm.id} className="border p-4 m-2">
+\t\t\t\t\t<h2>{farm.name}</h2>
+\t\t\t\t\t<p>Location: {farm.location}</p>
+\t\t\t\t</div>
+\t\t\t))}
+\t\t</div>
+\t);
+}
+\end{lstlisting}
+```
 % Implementation section for AgriConnect documentation
 \section{Implementation}
 

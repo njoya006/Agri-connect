@@ -1,3 +1,50 @@
+```tex
+% Architecture section for AgriConnect documentation
+\section{System Architecture}
+
+\subsection{Architecture Overview}
+AgriConnect follows a three-tier client-server architecture:
+\begin{itemize}[leftmargin=*]
+\t\item \textbf{Client Tier}: Next.js frontend.
+\t\item \textbf{Server Tier}: Django backend API.
+\t\item \textbf{Data Tier}: PostgreSQL database.
+\end{itemize}
+
+\begin{figure}[H]
+\t\centering
+\t\includegraphics[width=0.8\textwidth]{images/architecture.png}
+\t\caption{System Architecture Diagram}
+\t\label{fig:architecture}
+\end{figure}
+
+\subsection{Client Tier}
+The frontend is built with Next.js 13 and TypeScript:
+\begin{itemize}[leftmargin=*]
+\t\item Uses the App Router for routing pages.
+\t\item React components render the UI.
+\t\item Tailwind CSS handles styling.
+\t\item Axios manages API calls.
+\end{itemize}
+
+\subsection{Server Tier}
+The backend uses Django REST Framework:
+\begin{itemize}[leftmargin=*]
+\t\item Provides RESTful API endpoints.
+\t\item Implements JWT authentication.
+\t\item Persists data via PostgreSQL using the Django ORM.
+\t\item Leverages Redis for caching.
+\end{itemize}
+
+\subsection{Data Flow}
+\begin{enumerate}[leftmargin=*]
+\t\item The user interacts with the Next.js frontend.
+\t\item The frontend issues requests to the Django API.
+\t\item Django processes the request and queries PostgreSQL.
+\t\item The response returns to the frontend.
+\t\item The UI updates and presents the data to the user.
+\end{enumerate}
+
+```
 % Architecture section for AgriConnect documentation
 \section{System Architecture}
 
