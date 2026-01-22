@@ -1,0 +1,18 @@
+Hi {{ seller_name }},
+
+An order including your listings has been paid.
+
+Order: #{{ order_id }}
+Transaction: {{ transaction_id }}
+
+Your items:
+{% for it in items %}
+- {{ it.quantity }} × {{ it.title }} — {{ it.subtotal }}
+{% endfor %}
+
+Buyer: {{ buyer_email }}
+
+Please prepare the items for fulfillment.
+
+Thanks,
+AgriConnect

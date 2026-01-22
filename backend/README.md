@@ -50,3 +50,18 @@ AgriConnect is a modular Django 4.2 backend that powers an agricultural manageme
 - Set `DJANGO_DEBUG=False`, configure `DJANGO_ALLOWED_HOSTS`, and provide strong `DJANGO_SECRET_KEY`.
 - Point `DATABASE_URL` vars to managed PostgreSQL, and `CELERY_BROKER_URL` / `CELERY_RESULT_BACKEND` to production Redis.
 - Collect static assets with `python manage.py collectstatic` before deployment.
+
+### Production hardening checklist
+
+- Use the provided `.env.example` to create a `backend/.env` file with secure values.
+- Ensure `DJANGO_SECRET_KEY` is a strong, random string (recommended length >= 50).
+- Set `DJANGO_DEBUG=False` and populate `DJANGO_ALLOWED_HOSTS` with your domains.
+- Do not set `CORS_ALLOW_ALL=True` in production; instead set `CORS_ALLOWED_ORIGINS`.
+- Configure real email backend (e.g., SMTP, SES) via `DJANGO_EMAIL_BACKEND`.
+- Run the app locally with the production env to validate settings:
+   ```powershell
+   copy backend\.env.example backend\.env
+   # edit backend/.env and set secure values
+   cd backend
+   python manage.py check --deploy
+   ```

@@ -149,11 +149,26 @@ export async function exportStreamingInventoryItems(params: {
   const token = getToken("access");
   const headers: Record<string, string> = { 'Accept': 'text/csv' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  return fetch(url, {
-    method: 'GET',
-    headers,
-    credentials: 'include',
-  });
+
+  // Add timeout (30s)
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    return response;
+  } catch (err: any) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') {
+      throw new Error('Export timed out. Try again or narrow your filters.');
+    }
+    throw err;
+  }
 }
 
 export async function getInventoryTransactions(filters?: InventoryTransactionFilters): Promise<InventoryTransaction[]> {

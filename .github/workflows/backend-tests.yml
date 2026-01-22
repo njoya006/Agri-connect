@@ -1,0 +1,43 @@
+name: Backend tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure docker compose plugin is available
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose-plugin
+
+      - name: Start Postgres and Redis
+        run: |
+          cd backend
+          docker compose up -d db redis
+
+      - name: Wait for Postgres to be ready
+        run: |
+          cd backend
+          for i in {1..30}; do
+            docker compose exec db pg_isready -U "${POSTGRES_USER:-agriconnect}" && exit 0 || sleep 2
+          done
+          echo "Postgres did not become ready in time";
+          docker compose logs db || true
+          exit 1
+
+      - name: Run Django tests
+        env:
+          POSTGRES_DB: agriconnect
+          POSTGRES_USER: agriconnect
+          POSTGRES_PASSWORD: agriconnect
+        run: |
+          cd backend
+          docker compose run --rm web python manage.py test -v 2

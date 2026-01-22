@@ -45,11 +45,25 @@ class InventoryItemViewSet(viewsets.ModelViewSet):
 		return self.queryset.filter(owner=self.request.user)
 
 	def perform_create(self, serializer):
-		serializer.save(owner=self.request.user)
+		from django.db import IntegrityError
+		try:
+			serializer.save(owner=self.request.user)
+		except IntegrityError as e:
+			from rest_framework.exceptions import ValidationError
+			if 'unique' in str(e).lower():
+				raise ValidationError({'detail': 'An item with this name and category already exists for this farm.'})
+			raise
 
 	def perform_update(self, serializer):
+		from django.db import IntegrityError
 		quantity = serializer.validated_data.pop('quantity', None)
-		item = serializer.save()
+		try:
+			item = serializer.save()
+		except IntegrityError as e:
+			from rest_framework.exceptions import ValidationError
+			if 'unique' in str(e).lower():
+				raise ValidationError({'detail': 'An item with this name and category already exists for this farm.'})
+			raise
 		if quantity is not None:
 			quantity = Decimal(quantity)
 			current_quantity = item.quantity
@@ -179,21 +193,61 @@ class LowStockAlertViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, views
 			return self.queryset
 		return self.queryset.filter(item__owner=self.request.user)
 
-	def perform_update(self, serializer):
-		instance = serializer.save()
-		if instance.resolved and not instance.resolved_at:
-			instance.resolved_at = timezone.now()
-			instance.save(update_fields=['resolved_at'])
-
-
-class InventoryReportViewSet(viewsets.ViewSet):
-	permission_classes = [permissions.IsAuthenticated]
-
+	def perform_create(self, serializer):
+		from django.core.exceptions import ValidationError
+		validated = serializer.validated_data
+		try:
+			tx = apply_inventory_transaction(
+				item=validated['item'],
+				quantity_change=validated['quantity_change'],
+				transaction_type=validated['transaction_type'],
+				performed_by=self.request.user,
+				related_activity=validated.get('related_activity'),
+				notes=validated.get('notes', ''),
+			)
+			serializer.instance = tx
+		except ValidationError as e:
+			from rest_framework.exceptions import ValidationError as DRFValidationError
+			raise DRFValidationError({"detail": str(e)})
 	def get_queryset(self):
 		qs = InventoryItem.objects.select_related('farm')
 		if self.request.user.is_staff:
 			return qs
 		return qs.filter(owner=self.request.user)
+
+	@action(detail=False, methods=['get'], url_path='restocking-prediction')
+	def restocking_prediction(self, request):
+		"""Predict restocking needs for each inventory item based on usage trends and minimum stock."""
+		from django.db.models import Avg
+		days = int(request.GET.get('days', 30))
+		end_date = timezone.now()
+		start_date = end_date - timedelta(days=days)
+		items = self.get_queryset()
+		predictions = []
+		for item in items:
+			# Calculate average daily usage (negative quantity_change for USAGE/SALE)
+			usage_qs = item.transactions.filter(
+				transaction_type__in=[
+					InventoryTransaction.TransactionType.USAGE,
+					InventoryTransaction.TransactionType.SALE
+				],
+				transaction_date__range=(start_date, end_date)
+			)
+			total_usage = usage_qs.aggregate(total=Coalesce(Sum('quantity_change'), Value(0)))['total']
+			avg_daily_usage = abs(float(total_usage)) / days if days > 0 else 0
+			days_until_restock = None
+			if avg_daily_usage > 0:
+				days_until_restock = float(item.quantity) / avg_daily_usage if item.quantity > 0 else 0
+			predictions.append({
+				'item_id': item.id,
+				'item_name': item.name,
+				'current_quantity': float(item.quantity),
+				'minimum_stock_level': float(item.minimum_stock_level),
+				'avg_daily_usage': avg_daily_usage,
+				'days_until_restock': days_until_restock,
+				'should_restock': item.quantity < item.minimum_stock_level or (days_until_restock is not None and days_until_restock < 7),
+			})
+		return Response(predictions)
 
 	def list(self, request):
 		"""Return the default summary report when listing the endpoint."""
@@ -220,6 +274,60 @@ class InventoryReportViewSet(viewsets.ViewSet):
 			'categories': category_totals,
 		}
 		return Response(data)
+
+	@action(detail=False, methods=['get'], url_path='turnover-rate')
+	def turnover_rate(self, request):
+		"""Calculate inventory turnover rate for each item (sales/average inventory)."""
+		# For demo: turnover = total out transactions / average inventory (last 30 days)
+		from django.db.models import Avg, Q
+		days = int(request.GET.get('days', 30))
+		end_date = timezone.now()
+		start_date = end_date - timedelta(days=days)
+		items = self.get_queryset()
+		result = []
+		for item in items:
+			# Out transactions (sales, deduction, etc.)
+			from django.db.models import DecimalField
+			out_tx = item.transactions.filter(
+				transaction_type__in=[
+					InventoryTransaction.TransactionType.USAGE,
+					InventoryTransaction.TransactionType.SALE,
+					InventoryTransaction.TransactionType.ADJUSTMENT,
+				],
+				transaction_date__range=(start_date, end_date)
+			).aggregate(total_out=Coalesce(Sum('quantity_change'), Value(0), output_field=DecimalField()))
+			# Average inventory (approximate: avg quantity at start/end)
+			start_qty = item.quantity
+			# Optionally, could use historical logs for more accuracy
+			avg_inventory = item.quantity  # Placeholder for now
+			turnover = float(out_tx['total_out']) / float(avg_inventory) if avg_inventory else 0
+			result.append({
+				'item_id': item.id,
+				'item_name': item.name,
+				'turnover_rate': turnover,
+				'total_out': float(out_tx['total_out']),
+				'average_inventory': float(avg_inventory),
+			})
+		return Response(result)
+
+	@action(detail=False, methods=['get'], url_path='stock-value-trend')
+	def stock_value_trend(self, request):
+		"""Return stock value trend for the last N days (default 30)."""
+		days = int(request.GET.get('days', 30))
+		end_date = timezone.now().date()
+		start_date = end_date - timedelta(days=days)
+		items = self.get_queryset()
+		trend = []
+		for i in range(days + 1):
+			day = start_date + timedelta(days=i)
+			day_items = items.filter(updated_at__date__lte=day)
+			value_expression = ExpressionWrapper(
+				F('quantity') * Coalesce(F('selling_price'), F('purchase_price'), Value(0)),
+				output_field=DecimalField(max_digits=18, decimal_places=2),
+			)
+			total_value = day_items.aggregate(tv=Coalesce(Sum(value_expression), Value(0)))['tv']
+			trend.append({'date': str(day), 'total_value': float(total_value)})
+		return Response(trend)
 
 
 def alerts_stream(request):

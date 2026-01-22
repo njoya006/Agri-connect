@@ -3,14 +3,16 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, LogOut, User2 } from "lucide-react";
-import { useMemo } from "react";
+import { Menu, LogOut, User2, ShoppingCart } from "lucide-react";
+import { Bell } from "lucide-react";
+import { useMemo, useEffect, useState } from "react";
 
 import { NAV_LINKS } from "./navigation";
 import { Button } from "@/ui/button";
 import { Avatar, AvatarFallback } from "@/ui/avatar";
 import { useAuth } from "../../lib/hooks/use-auth";
 import { cn } from "../../lib/utils/helpers";
+import { getCart } from "@/lib/cart";
 
 export function Header() {
   const pathname = usePathname();
@@ -46,10 +48,84 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <MobileNav />
+          <NotificationsButton />
+          <CartButton />
           <UserDropdown userName={user?.first_name ?? "Agri User"} role={user?.role ?? "farmer"} />
         </div>
       </div>
     </header>
+  );
+}
+
+function NotificationsButton() {
+  const [count, setCount] = useState<number>(0);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchCount = async () => {
+      try {
+        // fetch notifications for current user and count unread
+        const resp = await (await import('@/lib/api/client')).default.get('/notifications/');
+        const data = resp.data?.results ?? resp.data ?? [];
+        if (!mounted) return;
+        const unread = (data as any[]).filter((n) => !n.is_read).length;
+        setCount(unread);
+      } catch (e) {
+        // ignore
+      }
+    };
+    fetchCount();
+    const onStorage = () => fetchCount();
+    window.addEventListener('storage', onStorage);
+    return () => {
+      mounted = false;
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  return (
+    <Link href="/notifications" className="relative">
+      <button aria-label="Notifications" className="inline-flex items-center justify-center rounded-full p-2 hover:bg-accent/10">
+        <Bell className="h-5 w-5 text-foreground/70" />
+      </button>
+      {count > 0 && (
+        <span className="absolute -right-1 -top-1 inline-flex items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-semibold text-white">
+          {count}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function CartButton() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const update = () => {
+      const items = getCart();
+      const total = items.reduce((s, i) => s + Number(i.quantity), 0);
+      setCount(total);
+    };
+    update();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === undefined || e.key === null) return;
+      if (e.key.includes('agri_cart_v1') || e.key.includes('agri_notifications_v1')) update();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  return (
+    <Link href="/marketplace/checkout" className="relative">
+      <button aria-label="View cart" className="inline-flex items-center justify-center rounded-full p-2 hover:bg-accent/10">
+        <ShoppingCart className="h-5 w-5 text-foreground/70" />
+      </button>
+      {count > 0 && (
+        <span className="absolute -right-1 -top-1 inline-flex items-center justify-center rounded-full bg-accent px-1.5 py-0.5 text-xs font-semibold text-accent-foreground">
+          {count}
+        </span>
+      )}
+    </Link>
   );
 }
 

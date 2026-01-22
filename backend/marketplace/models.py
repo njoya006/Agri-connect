@@ -105,3 +105,10 @@ class PriceUpdate(models.Model):
 
 	def __str__(self) -> str:
 		return f"{self.commodity} {self.grade} {self.market}"
+
+# Ensure order models are registered by Django's app registry
+try:
+	from .orders import Order, OrderItem  # noqa: F401
+except Exception:
+	# Import errors should not break model loading; migrations will surface issues.
+	pass

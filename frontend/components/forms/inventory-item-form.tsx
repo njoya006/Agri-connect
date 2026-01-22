@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
+import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -55,6 +56,20 @@ export function InventoryItemForm({ farms, defaultValues, onSubmit, submitLabel 
     },
   });
 
+  // Wrap onSubmit to catch unique constraint errors
+  const handleSubmit = async (values: InventoryFormValues) => {
+    try {
+      await onSubmit(values);
+    } catch (err: any) {
+      const msg = err?.message || err?.toString() || "Failed to save item. Please try again.";
+      if (msg.includes("already exists")) {
+        toast.error("An item with this name and category already exists for this farm. Please choose a different name or category.");
+      } else {
+        toast.error(msg);
+      }
+    }
+  };
+
   const quantity = form.watch("quantity") || 0;
   const purchasePrice = form.watch("purchase_price") || 0;
   const totalValue = useMemo(() => {
@@ -63,7 +78,7 @@ export function InventoryItemForm({ farms, defaultValues, onSubmit, submitLabel 
   }, [quantity, purchasePrice]);
 
   return (
-    <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+    <form className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
       <label className="text-sm font-medium text-foreground/80">
         Farm
         <select

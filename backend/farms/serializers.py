@@ -54,15 +54,28 @@ class ActivitySerializer(serializers.ModelSerializer):
     def _persist_images(self, instance, uploads):
         if not uploads:
             return
-        paths = store_activity_images(uploads)
-        instance.images = list(instance.images or []) + paths
-        instance.save(update_fields=['images'])
+        from django.core.exceptions import ValidationError
+        try:
+            # Validate file type and size (max 5MB, JPEG/PNG only)
+            for upload in uploads:
+                if upload.size > 5 * 1024 * 1024:
+                    raise ValidationError(f"Image '{upload.name}' exceeds 5MB size limit.")
+                if not upload.content_type or not upload.content_type.lower() in ["image/jpeg", "image/png"]:
+                    raise ValidationError(f"Image '{upload.name}' must be JPEG or PNG.")
+            paths = store_activity_images(uploads)
+            instance.images = list(instance.images or []) + paths
+            instance.save(update_fields=['images'])
+        except ValidationError as e:
+            raise serializers.ValidationError({"upload_images": str(e)})
+        except Exception as e:
+            raise serializers.ValidationError({"upload_images": f"Image upload failed: {str(e)}"})
 
     def create(self, validated_data):
         uploads = validated_data.pop('upload_images', [])
         inventory_items = validated_data.pop('inventory_items', [])
         validated_data['performed_by'] = self.context['request'].user
         activity = super().create(validated_data)
+        # Image upload errors will raise ValidationError and return 400
         self._persist_images(activity, uploads)
         # Deduct inventory and create transactions for each item
         from inventory.services import apply_inventory_transaction
@@ -79,8 +92,7 @@ class ActivitySerializer(serializers.ModelSerializer):
                     related_activity=activity,
                     notes=f"Deducted for activity {activity.id}",
                 )
-            except Exception as e:
-                # Optionally log or handle error
+            except Exception:
                 pass
         return activity
 

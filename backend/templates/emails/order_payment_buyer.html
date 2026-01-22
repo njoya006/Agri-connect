@@ -1,0 +1,16 @@
+<html>
+  <body>
+    <p>Hi {{ buyer_name }},</p>
+    <p>Thank you — your payment for order #{{ order_id }} was successful.</p>
+    <p><strong>Transaction:</strong> {{ transaction_id }}</p>
+    <p><strong>Total:</strong> {{ total }}</p>
+    <h4>Items</h4>
+    <ul>
+      {% for it in items %}
+        <li>{{ it.quantity }} × {{ it.title }} — {{ it.subtotal }} (seller: {{ it.seller_email }})</li>
+      {% endfor %}
+    </ul>
+    <p>We'll notify sellers to fulfill their parts of the order.</p>
+    <p>Thanks,<br/>AgriConnect</p>
+  </body>
+</html>
