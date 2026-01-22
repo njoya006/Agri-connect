@@ -1,6 +1,0 @@
-\contentsline {figure}{\numberline {1}{\ignorespaces AgriConnect Client-Server Architecture with Load Balancer}}{12}{figure.caption.1}%
-\contentsline {figure}{\numberline {2}{\ignorespaces Use Case Diagram for AgriConnect (Farmer and Buyer Interactions)}}{14}{figure.caption.2}%
-\contentsline {figure}{\numberline {3}{\ignorespaces Class Diagram of AgriConnect (Core System Classes and Relationships)}}{15}{figure.caption.3}%
-\contentsline {figure}{\numberline {4}{\ignorespaces Entity-Relationship Diagram for AgriConnect Database}}{16}{figure.caption.4}%
-\contentsline {figure}{\numberline {5}{\ignorespaces Example User Interface of AgriConnect}}{17}{figure.caption.5}%
-\contentsline {figure}{\numberline {6}{\ignorespaces Deployment Architecture of AgriConnect using AWS ELB and Vercel}}{24}{figure.caption.7}%

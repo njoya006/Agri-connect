@@ -28,3 +28,15 @@ venv/
 htmlcov/
 .coverage*
 .pytest_cache/
+
+# LaTeX build artifacts
+main.*
+*.aux
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.toc
+texput.log
