@@ -1,0 +1,35 @@
+% Testing section for AgriConnect documentation
+\section{Testing}
+
+\subsection{Testing Strategy}
+We use multiple testing levels:
+\begin{itemize}[leftmargin=*]
+	\item Unit testing for individual components
+	\item Integration testing for API endpoints
+	\item End-to-end testing for user flows
+\end{itemize}
+
+\subsection{Test Coverage}
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|l|l|}
+		\hline
+			extbf{Component} & \textbf{Target Coverage} \\
+		\hline
+		Django Models & 90\% \\
+		API Endpoints & 85\% \\
+		React Components & 80\% \\
+		Overall & 85\% \\
+		\hline
+	\end{tabular}
+	\caption{Test Coverage Goals}
+	\label{tab:coverage}
+\end{table}
+
+\subsection{Testing Tools}
+\begin{itemize}[leftmargin=*]
+	\item Django: pytest, Django Test Framework
+	\item Frontend: Jest, React Testing Library
+	\item API: Postman, Insomnia
+	\item E2E: Cypress (optional)
+\end{itemize}

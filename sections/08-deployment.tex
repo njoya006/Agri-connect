@@ -1,0 +1,27 @@
+% Deployment section for AgriConnect documentation
+\section{Deployment and Maintenance}
+
+\subsection{Deployment Architecture}
+\begin{itemize}[leftmargin=*]
+	\item Frontend deployed on Vercel
+	\item Backend deployed on Render
+	\item Database on Neon DB (PostgreSQL)
+	\item Images on Cloudinary
+\end{itemize}
+
+\subsection{Deployment Process}
+\begin{enumerate}[leftmargin=*]
+	\item Code pushed to GitHub
+	\item GitHub Actions run tests
+	\item If tests pass, deploy to staging
+	\item Manual review of staging
+	\item Deploy to production
+\end{enumerate}
+
+\subsection{Maintenance Plan}
+\begin{itemize}[leftmargin=*]
+	\item Regular security updates
+	\item Database backups daily
+	\item Monitor system performance
+	\item User feedback collection
+\end{itemize}

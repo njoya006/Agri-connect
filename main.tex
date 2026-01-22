@@ -1,0 +1,868 @@
+\documentclass[12pt,a4paper]{article}
+
+% -------------------- PACKAGES --------------------
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{setspace}
+\microtypesetup{nopatch=footnote}
+
+% -------------------- BRAND COLORS --------------------
+\definecolor{AgriPrimary}{HTML}{166534}
+\definecolor{AgriAccent}{HTML}{F6AD55}
+\definecolor{AgriMuted}{HTML}{EDF2F7}
+\definecolor{AgriText}{HTML}{1F2933}
+
+% -------------------- GLOBAL STYLING --------------------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=AgriPrimary,
+    citecolor=AgriPrimary,
+    urlcolor=AgriPrimary
+}
+\renewcommand{\familydefault}{\sfdefault}
+\linespread{1.15}
+
+% -------------------- PAGE SETUP -------------------- 
+\geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.1em}
+\raggedbottom
+\AtBeginDocument{\color{AgriText}}
+
+% -------------------- SECTION FORMATTING --------------------
+\titleformat{\section}{\Large\bfseries\color{AgriPrimary}}{\thesection}{1em}{}
+[\vspace{-0.5em}\color{AgriAccent}\rule{\textwidth}{0.5pt}]
+\titleformat{\subsection}{\large\bfseries\color{AgriPrimary!80}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\bfseries\color{AgriPrimary}}{\thesubsubsection}{1em}{}
+\titlespacing*{\section}{0pt}{1.5em}{0.9em}
+\titlespacing*{\subsection}{0pt}{1.2em}{0.6em}
+\titlespacing*{\subsubsection}{0pt}{1em}{0.4em}
+
+% -------------------- HEADER & FOOTER --------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{AgriPrimary}{AgriConnect Documentation}}
+\fancyhead[R]{\textcolor{AgriPrimary}{\thepage}}
+\fancyfoot[C]{\textcolor{AgriPrimary}{Year 3 Software Design Project}}
+\setlength{\headheight}{15pt}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\footrule}{\hbox to\headwidth{\color{AgriMuted}\leaders\hrule height \footrulewidth\hfill}}
+
+% -------------------- CODE STYLE --------------------
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    backgroundcolor=\color{AgriMuted},
+    frame=single,
+    rulecolor=\color{AgriPrimary!40},
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    keywordstyle=\color{AgriPrimary}\bfseries,
+    commentstyle=\color{AgriPrimary!70},
+    stringstyle=\color{AgriAccent!80},
+    numberstyle=\tiny\color{AgriPrimary!70},
+    numbers=left,
+    xleftmargin=1em,
+    framexleftmargin=0.5em
+}
+
+\lstdefinelanguage{JavaScript}{
+    keywords={const, let, var, if, else, return, import, from, export, function},
+    ndkeywords={class, extends, React, useState},
+    sensitive=true,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+    morestring=[b]',
+}
+
+% -------------------- DOCUMENT START --------------------
+\begin{document}
+\hypersetup{pageanchor=false}
+
+% -------------------- TITLE PAGE --------------------
+\begin{titlepage}
+    \centering
+    % Logo at the very top
+    \vspace*{0.2cm}
+    \includegraphics[width=1.2\textwidth]{images/F305E018-E25D-49D3-8434-F7FC173195A3.png}\\[1.2cm]
+    
+    {
+        \Large \textcolor{AgriAccent}{Year 3 Software Design and Implementation Project}\\[0.8cm]
+        {\Huge \textbf{\textcolor{AgriPrimary}{AgriConnect}}}\\[0.2cm]
+        {\Large Agricultural Management Platform}\\[0.8cm]
+    }
+    
+    \setlength{\fboxsep}{12pt}
+    \noindent\makebox[\textwidth]{
+        \fcolorbox{AgriPrimary!35}{AgriMuted}{\parbox{0.82\textwidth}{\centering\Large ``Connecting Farms to Markets''}}
+    }\\[1.4cm]
+
+    \begin{minipage}{0.48\textwidth}
+        \textbf{Team Members}\\[0.3cm]
+        \begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X@{}}
+            \textbf{[NJOYA MEDIN PRAISE ALAMBI]} & Scrum Master / Backend \\
+            \textbf{[NGEMINANG PRECIOUS]} & Frontend Developer \\
+        \end{tabularx}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.43\textwidth}
+        \textbf{Project Details}\\[0.3cm]
+        \begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X@{}}
+            Course: & Software Design and Implementation \\
+            Instructor: & \textbf{[ENGR PALMA]} \\
+            Institution: & \textbf{[THE ICT UNIVERSITY]} \\
+            Date: & \today \\
+        \end{tabularx}
+    \end{minipage}
+
+    \vfill
+
+    % Logo at the bottom removed
+\end{titlepage}
+
+\clearpage
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
+
+% -------------------- TABLE OF CONTENTS --------------------
+\tableofcontents
+\newpage
+
+% -------------------- LIST OF FIGURES & TABLES --------------------
+\listoffigures
+\listoftables
+\newpage
+\pagenumbering{arabic}
+
+% -------------------- SECTIONS --------------------
+
+% ----- ABSTRACT -----
+\section{Abstract}
+AgriConnect is a web-based agricultural management platform designed to bridge the gap between farmers and buyers. The platform facilitates farm record management, product listing, communication between users, and market browsing. This report provides detailed documentation of the project, including requirements analysis, system architecture, design, implementation, testing, and deployment. The system leverages modern technologies such as React.js, Node.js, PostgreSQL, AWS, and Vercel to ensure scalability, security, and usability.
+
+% ----- INTRODUCTION -----
+\section{Introduction}
+
+Agriculture is one of the most fundamental sectors of human society, providing food, raw materials, and employment for a significant proportion of the world’s population. In developing countries, agriculture serves not only as a source of livelihood but also as a backbone of economic stability and rural development. Despite its importance, the agricultural sector continues to face numerous challenges that limit productivity, efficiency, and profitability, particularly among smallholder farmers.
+
+Small-scale farmers constitute the majority of agricultural producers in many African countries. These farmers typically operate with limited resources, rely heavily on manual processes, and often lack access to modern technologies that could improve their operations. One of the most pressing challenges faced by farmers is limited access to reliable and profitable markets. Agricultural produce is often sold through intermediaries who dictate prices, leaving farmers with minimal profit margins. The lack of transparent pricing mechanisms further exacerbates this issue, making it difficult for farmers to make informed decisions regarding production and sales.
+
+Another major challenge within the agricultural sector is poor farm record management. Many farmers still rely on manual record keeping or do not keep records at all. As a result, tracking crop yields, expenses, seasonal patterns, and farm performance becomes extremely difficult. This lack of structured data negatively impacts planning, resource allocation, and long-term sustainability. Without accurate records, farmers are unable to evaluate the success of previous farming cycles or adopt data-driven approaches to improve productivity.
+
+In addition to market access and record management issues, communication gaps also hinder agricultural growth. Farmers often lack direct communication channels with buyers, suppliers, and agricultural experts. Information such as demand trends, quality requirements, and market expectations is rarely communicated effectively. This disconnect leads to post-harvest losses, unsold produce, and reduced income.
+
+The rapid advancement of information and communication technologies presents an opportunity to address many of these challenges. Digital platforms have proven effective in improving efficiency, transparency, and connectivity across various sectors. In agriculture, technology-driven solutions can facilitate market access, improve information flow, and provide tools for better farm management. Mobile and web-based applications, in particular, offer scalable solutions that can reach a wide audience, including rural communities.
+
+AgriConnect was conceived as a response to the challenges identified within the agricultural value chain. The platform is designed as a digital agricultural management system that connects farmers directly to buyers while providing essential tools for managing farm activities. AgriConnect enables farmers to create digital profiles, manage farm records, and list agricultural produce for sale on an accessible platform. Buyers, on the other hand, can browse available products, view farmer details, and communicate directly with producers.
+
+A key motivation behind the development of AgriConnect is the reduction of dependency on intermediaries. By enabling direct interaction between farmers and buyers, the platform promotes transparency and fair pricing. Farmers gain greater control over how their produce is marketed and sold, while buyers benefit from access to fresh produce and reliable sources.
+
+The system is designed with usability and accessibility as core priorities. Recognizing that many users may have limited experience with digital platforms, AgriConnect emphasizes simple navigation, clear interfaces, and straightforward workflows. The platform is also designed to be scalable, allowing for future expansion to include additional features such as mobile application support, online payment systems, and agricultural advisory services.
+
+This project focuses on the design and implementation of the AgriConnect platform using standard software engineering principles. The development process includes requirement analysis, system architecture design, implementation, testing, and deployment. Through this structured approach, the project aims to demonstrate how well-designed software systems can address real-world agricultural challenges and contribute to sustainable development.
+
+
+The remainder of this document is organized as follows: the system requirements are discussed in the next section, followed by a detailed explanation of the system architecture. Subsequent sections present the system design, implementation details, testing strategies, deployment process, and finally, a conclusion with proposed future enhancements.
+
+% ----- PROBLEM OVERVIEW -----
+\section{Problem Overview}
+
+Agriculture remains a backbone of many economies, particularly in developing countries, yet farmers often encounter numerous challenges that hinder productivity and profitability. Despite the proliferation of technology in various sectors, small to medium-scale farmers frequently lack efficient systems to manage farm operations and connect with buyers. AgriConnect was developed to address several key issues identified in the agricultural sector.
+
+\subsection{Challenges Faced by Farmers}
+Farmers face difficulties in managing their daily farm activities due to limited access to digital tools. Common challenges include:
+
+\begin{itemize}
+    \item \textbf{Record-Keeping:} Many farmers rely on paper-based systems to track crop types, planting schedules, and yields, leading to errors and inefficiencies.
+    \item \textbf{Market Access:} Farmers often struggle to reach potential buyers directly, relying on intermediaries who reduce their profit margins.
+    \item \textbf{Price Discovery:} Without a centralized platform, farmers cannot easily compare prices across markets, which may result in selling products below fair value.
+    \item \textbf{Communication Barriers:} Lack of direct communication channels between farmers and buyers slows down transactions and can lead to misunderstandings or lost sales.
+    \item \textbf{Knowledge Sharing:} Farmers have limited access to timely agricultural best practices, pest control information, and weather alerts, affecting productivity.
+\end{itemize}
+
+\subsection{Challenges Faced by Buyers}
+Similarly, buyers face issues that prevent efficient sourcing of agricultural products:
+
+\begin{itemize}
+    \item \textbf{Limited Supplier Visibility:} Buyers struggle to find reliable suppliers and often depend on local networks, which may be inconsistent or unreliable.
+    \item \textbf{Product Quality Verification:} Without digital platforms, it is challenging for buyers to verify farm product quality before purchase.
+    \item \textbf{Delayed Communication:} Communication with multiple farmers can be slow and fragmented, resulting in delayed procurement.
+    \item \textbf{Inefficient Logistics Planning:} Lack of structured data on availability and location of farm products increases logistical costs and complexity.
+\end{itemize}
+
+\subsection{Limitations of Existing Solutions}
+While some agricultural management systems exist, they are often limited in scope or accessibility:
+
+\begin{itemize}
+    \item Mobile apps may only focus on record-keeping without connecting farmers to buyers.
+    \item Market platforms often do not provide farm-level data or transaction tracking.
+    \item Existing platforms may not be accessible to farmers in rural areas due to internet connectivity or high costs.
+\end{itemize}
+
+\subsection{Motivation for AgriConnect}
+AgriConnect was designed to bridge these gaps by providing an integrated platform that combines farm management, product listing, buyer-farmer communication, and market discovery. By leveraging modern web technologies, cloud deployment, and a user-friendly interface, AgriConnect aims to:
+
+\begin{itemize}
+    \item Streamline farm record management digitally
+    \item Connect farmers directly to buyers, reducing intermediaries
+    \item Improve price transparency and market access
+    \item Enhance communication, coordination, and knowledge sharing
+    \item Provide a scalable and reliable platform that can grow with user demand
+\end{itemize}
+
+This problem overview establishes the need for AgriConnect and sets the context for the system requirements, architecture, and design discussed in subsequent sections.
+
+\section{System Requirements}
+
+This section describes the requirements of the AgriConnect system. System requirements define what the system is expected to do and the constraints under which it must operate. These requirements were derived from an analysis of the challenges faced by farmers and buyers within the agricultural value chain, as well as the overall objectives of the project. The requirements are categorized into functional requirements, non-functional requirements, user-specific requirements, and system constraints to provide a comprehensive understanding of the system’s expected behavior.
+
+% ----- TECHNOLOGY STACK -----
+\section{Technology Stack}
+
+AgriConnect leverages a modern, scalable, and containerized technology stack to ensure high performance, maintainability, and ease of deployment. The stack integrates frontend, backend, database, caching, containerization, and DevOps practices as described below.
+
+\subsection{Frontend}
+\begin{itemize}
+    \item \textbf{Framework:} \textit{Next.js} — provides server-side rendering, static site generation, and efficient routing.
+    \item \textbf{Language:} \textit{JavaScript (ES6+)} and \textit{TypeScript} for type safety.
+    \item \textbf{Styling:} TailwindCSS for responsive and modern UI components.
+    \item \textbf{API Communication:} Fetch API / Axios for interacting with the backend RESTful endpoints.
+    \item \textbf{Deployment:} Vercel is used to host the frontend, providing continuous integration, HTTPS endpoints, and CDN support.
+\end{itemize}
+
+\subsection{Backend}
+\begin{itemize}
+    \item \textbf{Framework:} \textit{Django} (Python) — robust and scalable backend framework, providing REST APIs via Django REST Framework (DRF).
+    \item \textbf{Web Server:} Gunicorn — production WSGI server for handling concurrent requests.
+    \item \textbf{Task Queue:} Celery with Redis for asynchronous tasks (notifications, analytics processing).
+    \item \textbf{Authentication:} JWT (JSON Web Tokens) for secure user sessions.
+    \item \textbf{Deployment:} Hosted on AWS EC2 instances behind an Elastic Load Balancer (ELB).
+\end{itemize}
+
+\subsection{Database \& Caching}
+\begin{itemize}
+    \item \textbf{Primary Database:} PostgreSQL hosted on AWS RDS — ensures relational data integrity for users, farms, products, and transactions.
+    \item \textbf{Caching:} Redis — used for caching frequently accessed data and handling asynchronous tasks via Celery.
+    \item \textbf{Persistence:} Volumes are mounted via Docker to persist database and media files.
+\end{itemize}
+
+\subsection{Containerization \& Orchestration}
+\begin{itemize}
+    \item \textbf{Docker:} Provides isolated, consistent environments for frontend, backend, database, and cache services.
+    \item \textbf{Docker Compose:} Simplifies local development by orchestrating multi-container services.
+    \item \textbf{Multi-stage Docker Builds:} Optimized production images for both frontend and backend to reduce image size and improve deployment efficiency.
+    \item \textbf{Optional Production Orchestration:} Docker Swarm or Kubernetes for horizontal scaling, service discovery, and high availability.
+    \item \textbf{Reverse Proxy:} Nginx or Traefik as a load balancer and SSL termination point.
+\end{itemize}
+
+\subsection{DevOps \& CI/CD}
+\begin{itemize}
+    \item \textbf{CI/CD:} GitHub Actions, GitLab CI, or Jenkins pipelines to automate testing, building, and deployment.
+    \item \textbf{Environment Management:} .env files for development and production environment variables, Docker secrets for sensitive data.
+    \item \textbf{Monitoring \& Logging:} Docker logs, Prometheus, and Grafana for performance and health monitoring.
+\end{itemize}
+
+\subsection{Why This Stack?}
+The chosen technology stack was selected to achieve the following objectives:
+\begin{itemize}
+    \item \textbf{Scalability:} Load balancers, containerization, and AWS infrastructure allow horizontal scaling as user demand grows.
+    \item \textbf{Consistency:} Docker ensures the same environment across development, testing, and production.
+    \item \textbf{Rapid Development:} Modern frameworks (Next.js, Django) and CI/CD pipelines accelerate development and deployment cycles.
+    \item \textbf{Maintainability:} Clear separation of frontend, backend, and database components enables modular updates and debugging.
+    \item \textbf{Security:} JWT authentication, HTTPS endpoints, and managed cloud services ensure user data protection.
+\end{itemize}
+
+\subsection{Directory Structure Overview}
+\begin{verbatim}
+agri-connect/
+|-- docker-compose.yml
+|-- .dockerignore
+|-- frontend/
+|   |-- Dockerfile
+|   `-- ...
+|-- backend/
+|   |-- Dockerfile
+|   |-- entrypoint.sh
+|   `-- ...
+`-- nginx/ (optional)
+    `-- nginx.conf
+\end{verbatim}
+
+This directory structure, combined with Docker containerization, ensures easy setup for new developers, isolated environments for testing, and smooth deployment to production servers.
+
+\subsection{Functional Requirements}
+
+Functional requirements describe the specific services and operations that the AgriConnect system must provide. These requirements define how users interact with the system and the core functionalities that support agricultural management and market connectivity.
+
+\subsubsection{User Registration and Authentication}
+\begin{itemize}
+    \item The system shall allow users to register as either farmers or buyers.
+    \item The system shall provide secure login functionality using unique credentials.
+    \item The system shall allow users to log out of the platform securely.
+    \item The system shall ensure that only authenticated users can access protected features.
+\end{itemize}
+
+\subsubsection{User Profile Management}
+\begin{itemize}
+    \item The system shall allow users to create and update personal profiles.
+    \item Farmers shall be able to include farm-related information such as location and type of produce.
+    \item Buyers shall be able to update contact and preference information.
+\end{itemize}
+
+\subsubsection{Farm Record Management}
+\begin{itemize}
+    \item The system shall allow farmers to create digital records of farming activities.
+    \item The system shall enable farmers to record crop type, planting date, and expected harvest time.
+    \item The system shall allow farmers to update and view historical farm records.
+\end{itemize}
+
+\subsubsection{Product Listing and Management}
+\begin{itemize}
+    \item The system shall allow farmers to list agricultural products for sale.
+    \item Each product listing shall include product name, quantity, price, and availability status.
+    \item The system shall allow farmers to update or remove product listings.
+\end{itemize}
+
+\subsubsection{Market Access and Buyer Interaction}
+\begin{itemize}
+    \item The system shall allow buyers to browse available agricultural products.
+    \item The system shall allow buyers to search and filter products based on criteria such as product type and location.
+    \item The system shall enable direct communication between buyers and farmers.
+\end{itemize}
+
+\subsection{Non-Functional Requirements}
+
+Non-functional requirements define the quality attributes of the system. These requirements ensure that AgriConnect performs efficiently, securely, and reliably under various conditions.
+
+\subsubsection{Usability}
+\begin{itemize}
+    \item The system shall provide a simple and intuitive user interface.
+    \item The system shall be easy to use for users with limited technical knowledge.
+    \item Navigation within the system shall be clear and consistent.
+\end{itemize}
+
+\subsubsection{Performance}
+\begin{itemize}
+    \item The system shall respond to user actions within an acceptable time.
+    \item The system shall support multiple users accessing the platform simultaneously.
+\end{itemize}
+
+\subsubsection{Security}
+\begin{itemize}
+    \item The system shall protect user data from unauthorized access.
+    \item The system shall ensure secure handling of authentication credentials.
+    \item The system shall restrict access to sensitive data based on user roles.
+\end{itemize}
+
+\subsubsection{Scalability}
+\begin{itemize}
+    \item The system shall be able to accommodate an increasing number of users.
+    \item The system shall support future feature expansion without major redesign.
+\end{itemize}
+
+\subsubsection{Reliability and Availability}
+\begin{itemize}
+    \item The system shall be available for use with minimal downtime.
+    \item The system shall handle system errors gracefully without data loss.
+\end{itemize}
+
+\subsection{User-Specific Requirements}
+
+Different users interact with the system in different ways. The AgriConnect platform identifies two primary user roles: farmers and buyers.
+
+\subsubsection{Farmer Requirements}
+\begin{itemize}
+    \item Farmers shall be able to manage farm and product information.
+    \item Farmers shall have control over product pricing and availability.
+    \item Farmers shall be able to communicate directly with interested buyers.
+\end{itemize}
+
+\subsubsection{Buyer Requirements}
+\begin{itemize}
+    \item Buyers shall be able to view available agricultural products.
+    \item Buyers shall be able to contact farmers for negotiation or inquiries.
+    \item Buyers shall be able to evaluate product details before purchase.
+\end{itemize}
+
+\subsection{System Constraints}
+
+System constraints define limitations under which the AgriConnect system must operate.
+
+\begin{itemize}
+    \item The system shall require an internet connection to function.
+    \item The system shall operate on standard web browsers.
+    \item The system shall be developed within the academic project timeline.
+    \item The system shall utilize available development tools and technologies.
+\end{itemize}
+
+% ----- ARCHITECTURE -----
+
+\section{System Architecture}
+
+System architecture defines the high-level structure of a software system, describing how different components are organized and how they interact with one another. A well-designed architecture is essential for ensuring that a system is scalable, maintainable, secure, and capable of meeting both current and future requirements. For the AgriConnect platform, careful consideration was given to selecting an architecture that could support a growing number of users while remaining simple enough for efficient development and maintenance.
+
+\subsection{Architecture Overview}
+
+AgriConnect adopts a multi-tier (layered) architecture, which separates the system into distinct layers, each with a specific responsibility. The architecture consists of three primary layers: the presentation layer, the application (business logic) layer, and the data layer. This architectural approach promotes separation of concerns, allowing each layer to evolve independently without affecting the overall system stability.
+
+The layered architecture was selected because it aligns well with modern web-based applications and provides a clear structure for managing complexity. By isolating user interaction, business logic, and data management, the system becomes easier to understand, test, and extend.
+
+\section{System Architecture}
+
+System architecture defines the high-level structure of a software system, describing how components interact to deliver required functionalities. A well-designed architecture ensures scalability, maintainability, and security. For AgriConnect, a \textbf{Client-Server architecture} was selected due to its suitability for web-based applications and centralized control requirements.
+
+\subsection{Architecture Overview}
+
+The Client-Server architecture divides the system into primary entities: clients, a server cluster, and the database. To support scalability and high availability, a \textbf{load balancer} is introduced between clients and backend servers. The load balancer distributes incoming requests across multiple server instances, ensuring no single server becomes a bottleneck and improving fault tolerance.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering
+\vspace{3cm}
+CLIENT-SERVER ARCHITECTURE DIAGRAM PLACEHOLDER (WITH LOAD BALANCER)\\
+\vspace{3cm}
+}}
+\caption{AgriConnect Client-Server Architecture with Load Balancer}
+\end{figure}
+
+\subsection{Client Layer}
+
+The client layer consists of the interface through which users interact with AgriConnect, including web pages and mobile applications. Clients send requests to the server cluster via the load balancer. Responsibilities include:
+
+\begin{itemize}
+    \item Rendering user interfaces and displaying data
+    \item Capturing user actions such as login, registration, product listing, and messaging
+    \item Sending requests to the load balancer in a structured format (e.g., HTTP requests with JSON payloads)
+    \item Receiving responses from the server cluster and presenting results to the user
+\end{itemize}
+
+\subsection{Server Layer}
+
+The server layer contains multiple Node.js server instances. The load balancer routes incoming requests to these servers using strategies like round-robin or least connections. Responsibilities include:
+
+\begin{itemize}
+    \item Processing client requests and applying business logic
+    \item Interacting with the database layer for persistent data
+    \item Ensuring consistent behavior across all server instances
+    \item Supporting horizontal scaling by adding more servers as demand grows
+\end{itemize}
+
+\subsection{Database Layer}
+
+The database layer, hosted on AWS RDS, stores persistent information such as users, farm records, products, and messages. Access is only permitted through the server layer to ensure security and data integrity.
+
+\subsection{Justification for Load Balancer Inclusion}
+
+The load balancer is included for several reasons:
+
+\begin{itemize}
+    \item \textbf{Scalability:} Distributes requests across multiple servers to handle increased traffic.
+    \item \textbf{High Availability:} If one server fails, the load balancer redirects traffic to healthy servers, reducing downtime.
+    \item \textbf{Performance Optimization:} Prevents server overload and maintains fast response times for users.
+    \item \textbf{Future-Proofing:} Supports horizontal scaling as the number of users grows.
+\end{itemize}
+
+\subsection{Comparison with Alternative Architectures}
+
+Alternative architectures such as peer-to-peer or monolithic systems were considered but rejected due to limitations in centralized control, scalability, and maintainability. Incorporating a load balancer in a client-server model provides the best balance of reliability, performance, and security for AgriConnect.
+
+\subsection{Future Considerations}
+
+
+The architecture allows for further enhancements, including microservices and additional backend modules. The load balancer ensures that future server expansion can be achieved seamlessly without impacting the client experience.
+
+\section{System Design}
+
+System design defines the internal structure and behavior of the AgriConnect platform, providing a blueprint for implementation. Design focuses on translating system requirements into practical, maintainable, and scalable solutions while ensuring usability for end users. This section details the design decisions, including the use of UML diagrams, database modeling, and user interface planning.
+
+\subsection{Use Case Modeling}
+
+Use Case modeling identifies the interactions between users and the system, highlighting the primary functionalities required to meet the business goals. The two main actors in AgriConnect are \textbf{Farmers} and \textbf{Buyers}. Each actor interacts with the system differently, and the use cases capture these behaviors.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.75\textwidth}{\centering
+\vspace{3cm}
+USE CASE DIAGRAM PLACEHOLDER\\
+\vspace{3cm}
+}}
+\caption{Use Case Diagram for AgriConnect (Farmer and Buyer Interactions)}
+\end{figure}
+
+\subsubsection{Explanation of Use Cases}
+
+\begin{itemize}
+    \item \textbf{User Registration and Login:} Both farmers and buyers must register to access the system. The login mechanism ensures secure authentication.
+    \item \textbf{Farm Record Management:} Farmers can create, update, and view detailed records of farm activities and crops.
+    \item \textbf{Product Listing and Management:} Farmers list available produce for sale with price, quantity, and availability details.
+    \item \textbf{Market Browsing and Purchase:} Buyers can search, filter, and view available products based on location and type.
+    \item \textbf{Communication:} Direct messaging between buyers and farmers allows negotiation and inquiry.
+\end{itemize}
+
+\subsection{Class Diagram Modeling}
+
+The Class Diagram represents the static structure of the AgriConnect system, illustrating the system’s classes, their attributes, methods, and relationships. It provides a blueprint for how data and operations are structured in the application.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.75\textwidth}{\centering
+\vspace{3cm}
+CLASS DIAGRAM PLACEHOLDER\\
+\vspace{3cm}
+}}
+\caption{Class Diagram of AgriConnect (Core System Classes and Relationships)}
+\end{figure}
+
+\subsubsection{Explanation of Classes}
+
+\begin{itemize}
+    \item \textbf{User Class:} Represents farmers and buyers, storing attributes like userID, name, role, and contact information. Methods include register(), login(), and updateProfile().
+    \item \textbf{Farm Class:} Contains attributes such as farmID, location, and cropType. Methods include addFarmRecord(), updateFarmRecord().
+    \item \textbf{Product Class:} Stores productID, productName, quantity, price, and availability. Methods include addProduct(), updateProduct(), removeProduct().
+    \item \textbf{Communication Class:} Represents messaging between users with attributes messageID, senderID, receiverID, timestamp, and content. Methods include sendMessage(), viewMessages().
+\end{itemize}
+
+The class diagram illustrates relationships such as aggregation (Farm contains Products) and associations (Users can communicate with other Users). This provides developers with a clear understanding of how the system is structured.
+
+\subsection{Database Design}
+
+A relational database was selected for AgriConnect due to its structured nature and ability to enforce data integrity. The database stores information about users, farms, products, and communications.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.75\textwidth}{\centering
+\vspace{3cm}
+DATABASE / ERD DIAGRAM PLACEHOLDER\\
+\vspace{3cm}
+}}
+\caption{Entity-Relationship Diagram for AgriConnect Database}
+\end{figure}
+
+\subsubsection{Database Explanation}
+
+The database design includes the following main entities:
+
+\begin{itemize}
+    \item \textbf{User:} Stores general user information, including role, contact details, and login credentials.
+    \item \textbf{Farm:} Represents farms owned by farmers, including location, type of crops, and other relevant metadata.
+    \item \textbf{Product:} Stores information about agricultural produce, including name, quantity, price, and availability.
+    \item \textbf{Communication:} Logs messages exchanged between buyers and farmers, including timestamps.
+\end{itemize}
+
+Relationships between entities are defined to ensure referential integrity. For example, a product is linked to a specific farm, which is associated with a user account.
+
+\subsection{User Interface Design}
+
+The user interface (UI) is a critical aspect of system design, as it directly affects usability. AgriConnect prioritizes simplicity and clarity for both farmers and buyers.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.75\textwidth}{\centering
+\vspace{3cm}
+UI SCREENSHOT / WIREFRAME PLACEHOLDER\\
+\vspace{3cm}
+}}
+\caption{Example User Interface of AgriConnect}
+\end{figure}
+
+Key design principles applied include:
+
+\begin{itemize}
+    \item \textbf{Consistency:} Uniform color schemes, fonts, and layouts ensure a cohesive experience.
+    \item \textbf{Accessibility:} High-contrast colors and readable fonts improve usability for all users.
+    \item \textbf{Minimal Complexity:} Tasks such as listing products or viewing farm records are implemented in a step-by-step workflow to reduce cognitive load.
+    \item \textbf{Responsiveness:} Interfaces adapt to various screen sizes, including mobile devices and tablets.
+\end{itemize}
+
+\subsection{Design Justification}
+
+The combination of UML modeling, database design, and thoughtful UI planning ensures that AgriConnect is:
+
+\begin{itemize}
+    \item \textbf{Maintainable:} Each module can be updated independently.
+    \item \textbf{Scalable:} The server can handle additional users and modules without requiring redesign.
+    \item \textbf{Secure:} Data access is controlled centrally, minimizing exposure to unauthorized access.
+    \item \textbf{User-Friendly:} The interface and workflows prioritize usability for farmers with minimal technical experience.
+\end{itemize}
+
+This design provides a comprehensive blueprint for implementation, allowing developers to efficiently translate requirements into a functional and reliable system.
+
+% ----- IMPLEMENTATION -----
+
+\section{Implementation}
+
+Implementation is the phase in which the design is translated into a functional system. For AgriConnect, the implementation focused on creating a client-server application that is secure, scalable, and maintainable, while adhering to the design principles defined in the previous sections. This section details the technology stack, module-to-code mapping, example implementations, and integration strategy.
+
+\subsection{Technology Stack}
+
+The choice of technology is critical for the successful implementation of AgriConnect. The following technologies were selected:
+
+\begin{itemize}
+    \item \textbf{Frontend (Client):} React.js was used to create a dynamic and responsive web interface. React allows for component-based development, making it easier to manage and reuse UI elements.
+    \item \textbf{Backend (Server):} Node.js with Express.js was chosen for the server because of its event-driven architecture, scalability, and seamless integration with JavaScript-based frontend.
+    \item \textbf{Database:} PostgreSQL was used as the relational database for its robustness, support for complex queries, and ability to maintain data integrity.
+    \item \textbf{Communication Protocol:} HTTP/HTTPS RESTful APIs were implemented to handle requests from clients to the server.
+    \item \textbf{Security:} JSON Web Tokens (JWT) were used for secure authentication and authorization of users.
+    \item \textbf{Version Control:} Git and GitHub were used for collaborative development and source code management.
+\end{itemize}
+
+\subsection{Module-to-Code Mapping}
+
+Each module identified during the design phase was implemented using the chosen technology stack. A high-level mapping is provided below:
+
+\begin{itemize}
+    \item \textbf{Authentication Module:} Implemented using Express.js middleware for login, registration, and JWT-based authentication.
+    \item \textbf{Farm Management Module:} Node.js controllers handle requests to create, update, and retrieve farm records; PostgreSQL stores persistent data.
+    \item \textbf{Product Listing Module:} React components handle product input forms, display listings, and communicate with the server through RESTful APIs.
+    \item \textbf{Communication Module:} Real-time messaging implemented using WebSocket protocols, with message storage in PostgreSQL.
+    \item \textbf{Database Access Module:} Utilized Sequelize ORM to abstract and manage database queries efficiently and securely.
+\end{itemize}
+
+\subsection{Example Implementation Snippets}
+
+\subsubsection{User Authentication (Backend)}
+
+\begin{lstlisting}[language=JavaScript, caption=User Authentication with JWT]
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const User = require('../models/User');
+
+// User login function
+async function login(req, res) {
+    const { email, password } = req.body;
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(401).send('Invalid email');
+
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).send('Invalid password');
+
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.json({ token });
+}
+\end{lstlisting}
+
+\subsubsection{Product Listing (Frontend)}
+
+\begin{lstlisting}[language=JavaScript, caption=React Component for Adding a Product]
+import React, { useState } from 'react';
+import axios from 'axios';
+
+function AddProduct() {
+    const [product, setProduct] = useState({ name: '', quantity: '', price: '' });
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        await axios.post('/api/products', product, { headers: { Authorization: 'Bearer token' } });
+        alert('Product added successfully');
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <input type="text" placeholder="Name" onChange={e => setProduct({...product, name: e.target.value})}/>
+            <input type="number" placeholder="Quantity" onChange={e => setProduct({...product, quantity: e.target.value})}/>
+            <input type="number" placeholder="Price" onChange={e => setProduct({...product, price: e.target.value})}/>
+            <button type="submit">Add Product</button>
+        </form>
+    );
+}
+
+export default AddProduct;
+\end{lstlisting}
+
+\subsection{Integration Strategy}
+
+The client-server communication was implemented using RESTful APIs. Each React frontend component communicates with the Node.js backend to perform CRUD operations. The backend validates requests, applies business logic, interacts with the PostgreSQL database, and returns appropriate responses.
+
+Modules are loosely coupled to ensure maintainability. For example, changes in the Farm Management Module do not affect the Product Listing Module. This separation aligns with the principles of modular programming and facilitates future system enhancements.
+
+\subsection{Best Practices Applied}
+
+Several best practices were applied during implementation:
+
+\begin{itemize}
+    \item \textbf{Code Modularity:} Each module was implemented as an independent component or controller.
+    \item \textbf{Security:} User credentials and sensitive data are encrypted and securely stored.
+    \item \textbf{Error Handling:} Comprehensive error handling ensures the system fails gracefully without data loss.
+    \item \textbf{Version Control and Collaboration:} Git branching strategies allowed multiple team members to contribute without conflicts.
+    \item \textbf{Testing During Implementation:} Unit tests were written alongside development to ensure that each module behaves as expected.
+\end{itemize}
+
+The implementation of AgriConnect reflects the careful planning and design decisions, resulting in a functional, maintainable, and scalable system ready for testing and deployment.
+
+% ----- TESTING -----
+
+\section{Testing}
+
+Testing is a critical phase in the software development lifecycle, aimed at ensuring that the AgriConnect system meets its functional and non-functional requirements. The goal of testing is to identify and rectify defects, verify system behavior, and provide confidence that the system performs reliably under real-world conditions.
+
+\subsection{Testing Strategy}
+
+The testing strategy for AgriConnect includes three main levels:
+
+\begin{enumerate}
+    \item \textbf{Unit Testing:} Focuses on individual modules or components to ensure each performs its intended function correctly. For example, the authentication module was tested to validate correct login behavior with valid and invalid credentials.
+    \item \textbf{Integration Testing:} Ensures that different modules interact correctly. This includes verifying that the frontend communicates properly with the backend APIs and that database queries return accurate results.
+    \item \textbf{System Testing:} Validates the system as a whole against the specified requirements. This includes end-to-end scenarios such as registering a user, listing products, and sending messages between buyers and farmers.
+\end{enumerate}
+
+Testing was conducted iteratively during development to detect issues early, reduce the cost of fixes, and ensure high-quality deliverables.
+
+\subsection{Test Cases}
+
+Representative test cases for key functionalities are summarized in Table \ref{tab:testcases}.
+
+\begin{table}[H]
+\centering
+\caption{Sample Test Cases for AgriConnect}
+\label{tab:testcases}
+\begin{tabularx}{\textwidth}{@{}lXlXl@{}}
+\toprule
+\textbf{Test ID} & \textbf{Functionality} & \textbf{Input} & \textbf{Expected Result} & \textbf{Actual Result} \\ \midrule
+TC01 & User Registration & Valid user details & User account created successfully & Pass \\
+TC02 & User Login & Correct email and password & JWT token returned & Pass \\
+TC03 & Product Listing & Product name, quantity, price & Product appears in listing & Pass \\
+TC04 & Farm Record Update & Update crop type & Changes reflected in database & Pass \\
+TC05 & Messaging & Send message to buyer & Message delivered successfully & Pass \\
+TC06 & Invalid Login & Wrong password & Error message displayed & Pass \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Testing Tools}
+
+The following tools were used to support testing:
+
+\begin{itemize}
+    \item \textbf{Jest:} Used for unit testing frontend React components and backend functions.
+    \item \textbf{Postman:} Used for testing API endpoints, including GET, POST, PUT, and DELETE requests.
+    \item \textbf{Manual Testing:} Conducted for usability evaluation, ensuring that the interface is intuitive and responsive.
+\end{itemize}
+
+\subsection{Testing Results and Analysis}
+
+All test cases executed produced the expected results, confirming that core functionalities such as authentication, farm record management, product listing, and communication operate correctly. Any minor issues identified during testing, such as form validation errors or incorrect error messages, were promptly addressed.
+
+Testing also verified system performance under multiple concurrent users, ensuring that response times remained within acceptable limits. Security tests confirmed that unauthorized access to protected resources was successfully prevented.
+
+\subsection{Conclusion on Testing}
+
+The comprehensive testing strategy applied to AgriConnect provides strong evidence that the system is reliable, secure, and ready for deployment. Iterative testing throughout the development process helped maintain code quality, minimize defects, and ensure a robust user experience.
+
+% ----- DEPLOYMENT -----
+
+\section{Deployment}
+
+Deployment is the final phase in the software development lifecycle where the AgriConnect system is made available to end users. The deployment strategy ensures that the system operates reliably in a production environment, is secure, and can scale as the number of users grows. AgriConnect is deployed using \textbf{AWS (Amazon Web Services)} for the backend server and database, and \textbf{Vercel} for the frontend client, leveraging modern cloud services for reliability and performance.
+
+\subsection{Deployment Architecture}
+
+The deployment architecture follows the client-server model with an added \textbf{AWS Elastic Load Balancer (ELB)} to manage traffic to multiple backend servers. The frontend (Vercel) communicates with the ELB, which distributes incoming requests to backend EC2 instances running the Node.js server. The backend interacts with a managed PostgreSQL database on AWS RDS.
+
+\begin{figure}[H]
+\centering
+\fbox{\parbox{0.8\textwidth}{\centering
+\vspace{3cm}
+DEPLOYMENT ARCHITECTURE DIAGRAM PLACEHOLDER (WITH AWS ELB)\\
+\vspace{3cm}
+}}
+\caption{Deployment Architecture of AgriConnect using AWS ELB and Vercel}
+\end{figure}
+
+This architecture ensures:
+
+\begin{itemize}
+    \item High availability: The ELB routes traffic only to healthy EC2 instances.
+    \item Scalability: Additional EC2 instances can be added behind the ELB as user load increases.
+    \item Fault tolerance: If one server fails, traffic is automatically redirected to other servers.
+\end{itemize}
+
+\subsection{Frontend Deployment on Vercel}
+
+Vercel was selected to host the frontend React application due to its ease of use, continuous deployment capabilities, and global CDN distribution. Deployment steps include:
+
+\begin{enumerate}
+    \item Push the React project to a GitHub repository.
+    \item Connect the repository to Vercel for automatic deployment.
+    \item Configure environment variables for API endpoints pointing to the AWS ELB endpoint.
+    \item Enable automatic builds for every commit to the main branch, ensuring continuous integration and deployment.
+\end{enumerate}
+
+Vercel provides a secure HTTPS endpoint for the frontend, improving performance and accessibility for users worldwide.
+
+\subsection{Backend Deployment on AWS with ELB}
+
+The backend Node.js server and PostgreSQL database are deployed on AWS:
+
+\begin{enumerate}
+    \item Provision multiple EC2 instances for the Node.js backend.
+    \item Install necessary software packages (Node.js, npm, environment dependencies) on each instance.
+    \item Configure PM2 to manage Node.js processes on each server.
+    \item Deploy the PostgreSQL database using AWS RDS with multi-zone redundancy and automated backups.
+    \item Configure an \textbf{AWS Elastic Load Balancer (ELB)} to distribute incoming requests among the EC2 instances.
+    \item Configure security groups to restrict access to authorized ports and allow traffic from the ELB only.
+    \item Connect the backend server to the frontend deployed on Vercel via the ELB endpoint.
+\end{enumerate}
+
+\subsection{Continuous Integration and Deployment}
+
+The deployment setup integrates CI/CD best practices:
+
+\begin{itemize}
+    \item Frontend updates on GitHub automatically trigger a Vercel build and deployment.
+    \item Backend updates are deployed to EC2 instances using Git pull commands followed by a PM2 restart.
+    \item The ELB ensures that new servers or updated instances can be added without downtime.
+    \item Database migrations and seed data updates are performed through scripted commands to minimize downtime.
+\end{itemize}
+
+\subsection{Security Considerations}
+
+Security remains a priority:
+
+\begin{itemize}
+    \item All communications between the client (Vercel) and server (AWS ELB) are encrypted using HTTPS.
+    \item JWT tokens are securely validated on the backend.
+    \item AWS security groups restrict access to EC2 instances and RDS only to authorized traffic.
+    \item Environment variables storing sensitive credentials are kept secure and never exposed in frontend code.
+    \item ELB health checks ensure that only secure and healthy servers receive traffic.
+\end{itemize}
+
+\subsection{Scalability and Reliability}
+
+The inclusion of the AWS ELB enhances scalability and reliability:
+
+\begin{itemize}
+    \item Automatically distributes requests to multiple EC2 instances, preventing overload.
+    \item Supports horizontal scaling by adding more backend servers behind the ELB.
+    \item Ensures high availability through health checks and automatic failover.
+    \item Vercel’s global CDN complements backend scalability by providing fast frontend access worldwide.
+\end{itemize}
+
+By deploying AgriConnect with AWS ELB, EC2, RDS, and Vercel, the system achieves a highly available, secure, and scalable platform capable of serving a growing user base efficiently.
+
+% ----- CONCLUSION -----
+
+\section{Conclusion}
+
+AgriConnect represents a comprehensive solution for connecting farmers to buyers through a modern, web-based agricultural management platform. The project successfully addressed the requirements identified during the analysis phase, including user-friendly interfaces, secure data management, efficient farm and product record handling, and reliable communication between users.
+
+The development process followed a systematic approach, beginning with detailed requirements gathering, followed by careful architectural planning using a client-server model, and thorough system design including UML diagrams, database modeling, and user interface planning. The implementation phase utilized a robust technology stack, incorporating React.js for the frontend, Node.js and Express.js for the backend, and PostgreSQL for data management, ensuring a maintainable, scalable, and secure system.
+
+Comprehensive testing, including unit, integration, and system testing, confirmed that the system operates reliably under expected conditions. Deployment on AWS and Vercel provided a scalable, secure, and accessible platform for end users, demonstrating that the system can handle real-world operational demands.
+
+In conclusion, AgriConnect not only meets its functional and non-functional requirements but also provides a solid foundation for future enhancements. Potential improvements include integrating additional services such as payment processing, analytics dashboards, or weather-based recommendations, as well as adopting microservices for further scalability. Overall, AgriConnect offers a practical, reliable, and user-centered platform that effectively bridges the gap between farmers and buyers, contributing positively to agricultural efficiency and market accessibility.
+
+\end{document}
